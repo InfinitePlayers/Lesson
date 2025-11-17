@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Today's Plan</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js will be loaded at the bottom -->
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        .current-block {
+            border-width: 4px;
+            border-color: #3b82f6; /* blue-500 */
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            opacity: 1;
+        }
+        .completed-block {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            opacity: 0.6;
+        }
+
+        /* Progress bar styles */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #1d4ed8; /* darker blue */
+            border-radius: 4px;
+            overflow: hidden;
+            height: 1.25rem; /* 20px */
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #60a5fa; /* lighter blue */
+            width: 0%;
+            transition: width 0.5s ease-out;
+            text-align: right;
+            padding-right: 8px;
+            color: #1e3a8a;
+            font-weight: bold;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+        }
+
+        /* Sound banner style */
+        #sound-banner {
+            transition: opacity 0.5s ease;
+            cursor: pointer;
+        }
+
+        /* AI Chat Styles */
+        #ai-chat-log {
+            max-height: calc(70vh - 150px); /* Adjust based on header/footer */
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+        }
+        .chat-bubble-user {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-bubble-ai {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #1f2937; /* gray-800 */
+            align-self: flex-start;
+        }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            align-self: flex-start;
+        }
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #9ca3af; /* gray-400 */
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite both;
+        }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: -0.32s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        /* TTS Play Button Spinner (REMOVED) */
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
+
+    <!-- Sound On Banner -->
+    <div id="sound-banner" class="fixed top-0 left-0 right-0 bg-yellow-300 text-yellow-900 p-3 text-center z-50">
+        Click anywhere on the page to enable sound alerts.
+    </div>
+
+    <div class="max-w-3xl mx-auto">
+        
+        <!-- Header -->
+        <header class="text-center mb-8 pt-12"> <!-- Added padding-top to avoid banner overlap -->
+            <h1 class="text-4xl font-bold text-blue-600">TODAY’S PLAN</h1>
+            <p class="text-2xl text-gray-600">For Dexter</p>
+        </header>
+
+        <!-- Status Section -->
+        <div id="status-section" class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8 text-center sticky top-0 z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <div class="text-sm font-medium text-blue-200 uppercase">Current Time (UK)</div>
+                    <div id="current-time" class="text-3xl font-bold">12:00:00 PM</div>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-blue-200 uppercase">Current Activity</div>
+                    <div id="current-activity" class="text-3xl font-bold">--</div>
+                </div>
+            </div>
+            <!-- Time Left and Progress Bar -->
+            <div id="timer-details" class="hidden">
+                <div class="text-sm font-medium text-blue-200 uppercase mb-2">Time Left in Session</div>
+                <div id="time-left" class="text-2xl font-bold mb-3">00:00</div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule -->
+        <main id="schedule-container" class="space-y-6">
+
+            <!-- Block 1: Lunch -->
+            <section id="block-1200" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Lunch, reset, and walk</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1200" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">12:00 - 13:00</span>
+                </div>
+                <p class="text-gray-600">Eat, hydrate, short break, quick walk if possible.</p>
+            </section>
+
+            <!-- Block 2: Science -->
+            <section id="block-1300" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Science</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1300" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">13:00 - 13:45</span>
+                </div>
+                <p class="mb-4">
+                    <a href="https://classroom.thenational.academy/subjects-by-year/year-8/subjects/science" target="_blank" class="text-blue-500 hover:underline font-medium">
+                        Oak National Academy Year 8 Science
+                    </a>
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-gray-600">
+                    <li>Open the next lesson.</li>
+                    <li>Watch the video.</li>
+                    <li>Complete the quiz questions.</li>
+                </ul>
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <strong class="text-blue-800">Goal:</strong> Finish one full lesson.
+                </div>
+            </section>
+
+            <!-- Block 3: Break -->
+            <section id="block-1345" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Short break</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1345" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">13:45 - 14:00</span>
+                </div>
+                <p class="text-gray-600">Stretch, toilet, reset.</p>
+            </section>
+
+            <!-- Block 4: Creative time -->
+            <!-- Block 4: LEGO Challenge -->
+            <section id="block-1400" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">LEGO Challenge</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1400" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">14:00 - 14:45</span>
+                </div>
+                <p class="mb-2 text-gray-600">Pick one build challenge:</p>
+                <ul class="list-disc list-inside space-y-2 mb-4 text-gray-600">
+                    <li>Build a small, sturdy bridge that can hold your phone.</li>
+                    <li>Design a small robot or mech.</li>
+                    <li>Create a future-themed vehicle (car, spaceship).</li>
+                    <li>Build a model of one object on your desk (e.g., mug, lamp).</li>
+                </ul>
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <strong class="text-blue-800">Goal:</strong> Finish one small, stable model before the timer ends.
+                </div>
+            </section>
+
+            <!-- Block 5: Break -->
+            <section id="block-1445" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Break</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1445" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">14:45 - 15:00</span>
+                </div>
+                <p class="text-gray-600">Snack, movement, quiet time.</p>
+            </section>
+
+            <!-- Block 6: Project block -->
+            <section id="block-1500" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Project block</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1500" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">15:00 - 15:45</span>
+                </div>
+                <p class="mb-2 text-gray-600">Cardboard model project. Resources:</p>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li><a href="https://www.thenational.academy/teachers/programmes/design-technology-secondary-ks3/units/ergonomic-design-accessible-controllers/lessons/cardboard-modelling-techniques" target="_blank" class="text-blue-500 hover:underline font-medium">Oak cardboard techniques lesson</a></li>
+                    <li><a href="https://www.jamesdysonfoundation.com/media/5p2bpptf/standalone_prototypingskills_us.pdf" target="_blank" class="text-blue-500 hover:underline font-medium">Dyson cardboard skills guide</a></li>
+                </ul>
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <strong class="text-blue-800">Today's Task:</strong> Pick one small step that moves the model forward (e.g., cut one piece, test a join, build a small section).
+                </div>
+            </section>
+
+            <!-- Block 7: Light English or typing -->
+            <section id="block-1545" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-blue-700">Light English or typing</h2>
+                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1545" title="Read instructions">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">15:45 - 16:00</span>
+                </div>
+                <p class="mb-4">
+                    <a href="https://www.typingclub.com" target="_blank" class="text-blue-500 hover:underline font-medium">
+                        Typing Club
+                    </a>
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-gray-600">
+                    <li>Do 10 to 15 minutes of typing.</li>
+                    <li>Or read a short set of instructions for tomorrow’s project step.</li>
+                </ul>
+            </section>
+
+             <!-- Block 8: End -->
+            <section id="block-1600" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-3">
+                        <h2 class="text-2xl font-bold text-green-700">All Done!</h2>
+                        <button class="tts-play-btn text-green-500 hover:text-green-700" data-block-id="block-1600" title="Read message">
+                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                        </button>
+                    </div>
+                    <span class="text-lg font-semibold text-gray-700">16:00 onwards</span>
+                </div>
+                <p class="text-gray-600">Great work today!</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- AI Helper Button -->
+    <button id="ai-help-button" class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-transform opacity-50 cursor-not-allowed" disabled title="AI Helper (Coming Soon)">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2M12 12h.008v.008H12V12z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a.96.96 0 01-.844-.455l-3.037-4.556A.96.96 0 018 12.03V10a.96.96 0 01.844-.949l3.037-1.518A.96.96 0 0113 8.443v2.162a.96.96 0 01-.844.949l-3.037 1.518a.96.96 0 01-.119.026z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+        </svg>
+    </button>
+
+    <!-- AI Chat Modal -->
+    <div id="ai-chat-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg h-[70vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-4 border-b">
+                <div>
+                    <h3 class="text-xl font-bold text-blue-600">AI Helper</h3>
+                    <p id="ai-context-bar" class="text-sm text-gray-500">Asking about: General</p>
+                </div>
+                <button id="ai-chat-close" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Chat Log -->
+            <div id="ai-chat-log" class="flex-1 p-4 space-y-4 overflow-y-auto flex flex-col">
+                <!-- Chat messages will be appended here -->
+                <div class="chat-bubble chat-bubble-ai">
+                    Hi Dexter! I'm here to help. Ask me a question about your current task.
+                </div>
+            </div>
+            <!-- Loading Indicator -->
+            <div id="ai-loading-indicator" class="p-4 border-t border-gray-200 hidden">
+                 <div class="loading-indicator">
+                    <span class="text-gray-500 mr-2">Thinking...</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            </div>
+            <!-- Input Area -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex space-x-2">
+                    <input type="text" id="ai-chat-input" class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type or use mic...">
+                    <!-- Voice-to-Text Button -->
+                    <button id="ai-mic-button" class="bg-gray-200 text-gray-700 p-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                    </button>
+                    <button id="ai-chat-send" class="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Tone.js and run initSound() when it's loaded -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" onload="initSound()" async defer></script>
+    
+    <!-- Main page script -->
+    <script>
+        // --- DOM Elements ---
+        const timeEl = document.getElementById('current-time');
+        const activityEl = document.getElementById('current-activity');
+        const timeLeftEl = document.getElementById('time-left');
+        const timerDetailsEl = document.getElementById('timer-details');
+        const progressBarEl = document.getElementById('progress-bar');
+        const soundBannerEl = document.getElementById('sound-banner');
+
+        // --- AI Chat Elements ---
+        const helpButton = document.getElementById('ai-help-button');
+        const chatModal = document.getElementById('ai-chat-modal');
+        const chatCloseButton = document.getElementById('ai-chat-close');
+        const chatLog = document.getElementById('ai-chat-log');
+        const chatInput = document.getElementById('ai-chat-input');
+        const chatSendButton = document.getElementById('ai-chat-send');
+        const contextBar = document.getElementById('ai-context-bar');
+        const loadingIndicator = document.getElementById('ai-loading-indicator');
+        const micButton = document.getElementById('ai-mic-button');
+
+        // --- State Variables ---
+        let currentAiContext = "General";
+        let recognition;
+        let isListening = false;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        const apiKey = ""; // API key will be injected by the environment
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        // const ttsApiUrl = `...` // REMOVED
+        
+        let soundEnabled = false;
+        let currentBlockId = null;
+        let synth; // Will be initialized by initSound()
+
+        // --- TTS State ---
+        // let ttsAudioEl; // REMOVED
+        // let ttsLoading = false; // REMOVED
+        let ukFemaleVoice = null; // Variable to hold the selected voice
+
+        // --- Schedule Data with Kickoff Text ---
+        const scheduleData = [
+            { id: 'block-1200', title: 'Lunch, reset & walk', kickoff: "Time for lunch. Eat, hydrate, have a short break, and get a quick walk if you can." },
+            { id: 'block-1300', title: 'Science', kickoff: "Open Oak Science. Pick your next lesson. Watch the video. Work through each question until the end." },
+            { id: 'block-1345', title: 'Short break', kickoff: "Time for a quick break. Stretch, use the toilet, and reset." },
+            { id: 'block-1400', title: 'LEGO Challenge', kickoff: "Time for the LEGO Challenge. Pick one of the build ideas and try to complete it before the timer ends. Focus on a strong and stable build." },
+            { id: 'block-1445', title: 'Break', kickoff: "Have a snack, move around, or just have some quiet time." },
+            { id: 'block-1500', title: 'Project block', kickoff: "Project time. Pick one small step on your cardboard model and finish it before the timer ends." },
+            { id: 'block-1545', title: 'Typing', kickoff: "Finish the day with typing practice. Keep it short." },
+            { id: 'block-1600', title: 'All Done!', kickoff: "Great work today, Dexter! You're all done." }
+        ];
+
+        // --- Core Logic: Schedule Update ---
+        function updateSchedule() {
+            const today = new Date();
+            // Build schedule with dynamic times
+            const schedule = [
+                { ...scheduleData[0], start: new Date(today).setHours(12, 0, 0, 0), end: new Date(today).setHours(13, 0, 0, 0) },
+                { ...scheduleData[1], start: new Date(today).setHours(13, 0, 0, 0), end: new Date(today).setHours(13, 45, 0, 0) },
+                { ...scheduleData[2], start: new Date(today).setHours(13, 45, 0, 0), end: new Date(today).setHours(14, 0, 0, 0) },
+                { ...scheduleData[3], start: new Date(today).setHours(14, 0, 0, 0), end: new Date(today).setHours(14, 45, 0, 0) },
+                { ...scheduleData[4], start: new Date(today).setHours(14, 45, 0, 0), end: new Date(today).setHours(15, 0, 0, 0) },
+                { ...scheduleData[5], start: new Date(today).setHours(15, 0, 0, 0), end: new Date(today).setHours(15, 45, 0, 0) },
+                { ...scheduleData[6], start: new Date(today).setHours(15, 45, 0, 0), end: new Date(today).setHours(16, 0, 0, 0) },
+                { ...scheduleData[7], start: new Date(today).setHours(16, 0, 0, 0), end: new Date(today).setHours(23, 59, 59, 0) }
+            ];
+
+            const now = new Date();
+            const nowTime = now.getTime();
+            
+            // Use a simple time string format that doesn't rely on 'en-GB'
+                timeEl.textContent = now.toTimeString().split(' ')[0];
+
+            const currentBlock = schedule.find(block => nowTime >= block.start && nowTime < block.end);
+            
+            let newBlockId = null;
+
+            if (currentBlock) {
+                newBlockId = currentBlock.id;
+                activityEl.textContent = currentBlock.title;
+                activityEl.classList.remove('text-yellow-300');
+                currentAiContext = currentBlock.title;
+
+                const timeLeftMs = currentBlock.end - nowTime;
+                const totalSecondsLeft = Math.floor(timeLeftMs / 1000);
+                const minutes = Math.floor(totalSecondsLeft / 60);
+                const seconds = totalSecondsLeft % 60;
+                timeLeftEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                const totalDuration = currentBlock.end - currentBlock.start;
+                const elapsed = nowTime - currentBlock.start;
+                const progressPercent = (elapsed / totalDuration) * 100;
+                progressBarEl.style.width = `${progressPercent}%`;
+                progressBarEl.textContent = `${Math.floor(progressPercent)}%`;
+
+                timerDetailsEl.classList.remove('hidden');
+
+                if (currentBlock.title === 'All Done!') {
+                    timerDetailsEl.classList.add('hidden');
+                }
+            } else {
+                currentAiContext = "General";
+                progressBarEl.style.width = `0%`;
+                progressBarEl.textContent = "";
+
+                if (nowTime < schedule[0].start) {
+                    activityEl.textContent = "Waiting to start...";
+                    activityEl.classList.add('text-yellow-300');
+                    
+                    const timeToStart = schedule[0].start - nowTime;
+                    const minutesToStart = Math.ceil(timeToStart / 60000);
+                    timeLeftEl.textContent = `Starts in ${minutesToStart} min`;
+                    timerDetailsEl.classList.remove('hidden');
+                } else {
+                    activityEl.textContent = "Waiting to start...";
+                    activityEl.classList.add('text-yellow-300');
+                    timerDetailsEl.classList.add('hidden');
+                }
+            }
+
+            schedule.forEach(block => {
+                const blockEl = document.getElementById(block.id);
+                if (!blockEl) return;
+                if (block.end < nowTime) {
+                    blockEl.classList.add('completed-block');
+                    blockEl.classList.remove('current-block');
+                } else if (block.id === newBlockId) {
+                    blockEl.classList.remove('completed-block');
+                    blockEl.classList.add('current-block');
+                } else {
+                    blockEl.classList.remove('completed-block');
+                    blockEl.classList.remove('current-block');
+                }
+            });
+
+            if (newBlockId !== currentBlockId) {
+                if (currentBlockId !== null) {
+                    playSound();
+                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                currentBlockId = newBlockId;
+            }
+        }
+        
+        // --- Timer Runner ---
+        function runTimer() {
+            updateSchedule(); // Run once immediately
+            setInterval(updateSchedule, 1000); // Start the 1-second loop
+        }
+
+        // --- Sound Logic ---
+        function playSound() {
+            if (!soundEnabled || !synth) return;
+            try {
+                synth.triggerAttackRelease("C5", "0.5s");
+            } catch (e) {
+                console.error("Error playing sound: ", e);
+            }
+        }
+
+        function initSound() {
+            // This function is called by Tone.js onload
+            if (typeof Tone === 'undefined') {
+                console.error("Tone.js failed to load.");
+                soundBannerEl.textContent = "Sound alerts failed to load.";
+                soundBannerEl.style.backgroundColor = "#fca5a5"; // red-300
+                soundBannerEl.style.color = "#b91c1c"; // red-800
+                return;
+            }
+            
+            synth = new Tone.Synth().toDestination();
+            
+            document.body.addEventListener('click', () => {
+                if (soundEnabled) return;
+                // Start Tone.js
+                Tone.start().then(() => {
+                    console.log('Audio context started.');
+                    soundEnabled = true;
+                    soundBannerEl.style.opacity = '0';
+                    setTimeout(() => soundBannerEl.style.display = 'none', 500);
+                    playSound(); // Play a confirmation sound
+                }).catch(e => {
+                    console.error("Error starting Tone.js: ", e);
+                });
+
+                // Also warm up the SpeechSynthesis API
+                if ('speechSynthesis' in window) {
+                    // Speaking an empty string or space is a common trick to initialize it
+                    const warmUpUtterance = new SpeechSynthesisUtterance(' ');
+                    speechSynthesis.speak(warmUpUtterance);
+                    console.log('Speech synthesis API warmed up.');
+                }
+            }, { once: true });
+        }
+        
+        // --- TTS Helper Functions (REMOVED) ---
+        // ... base64ToArrayBuffer, pcmToWav, writeString ...
+
+        // --- TTS API Call (REMOVED) ---
+        // ... getAndPlayTTS ...
+
+        // --- System TTS Functions ---
+
+        /**
+         * Loads and finds the best available UK female voice.
+         */
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) {
+                console.warn("Speech synthesis not supported.");
+                return;
+            }
+            
+            const voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                console.warn("No voices loaded yet. Will try again when list changes.");
+                return;
+            }
+
+            // Try to find the "best" UK female voice
+            // Prioritize specific, high-quality voices first
+            ukFemaleVoice = voices.find(voice => voice.lang === 'en-GB' && (
+                voice.name.includes('Google UK English Female') || 
+                voice.name.includes('Microsoft Susan') ||
+                voice.name.includes('Female')
+            ));
+            
+            // If no specific female voice found, take the first available en-GB voice
+            if (!ukFemaleVoice) {
+                ukFemaleVoice = voices.find(voice => voice.lang === 'en-GB');
+            }
+
+            if (ukFemaleVoice) {
+                console.log("Selected voice:", ukFemaleVoice.name);
+            } else {
+                console.warn("Could not find a suitable 'en-GB' voice.");
+            }
+        }
+
+        /**
+         * Plays the given text using the browser's SpeechSynthesis.
+         */
+        function playSystemTTS(text) {
+            if (!('speechSynthesis' in window) || !text) {
+                return;
+            }
+
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            if (ukFemaleVoice) {
+                utterance.voice = ukFemaleVoice;
+            } else {
+                // Fallback if voice loading was delayed
+                const voices = speechSynthesis.getVoices();
+                let fallbackVoice = voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) || voices.find(v => v.lang === 'en-GB');
+                if (fallbackVoice) {
+                    utterance.voice = fallbackVoice;
+                }
+            }
+
+            utterance.pitch = 1;
+            utterance.rate = 1;
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- TTS Initialization ---
+        function initTTS() {
+            if (!('speechSynthesis' in window)) {
+                console.error("Browser does not support speech synthesis.");
+                // Hide all play buttons if not supported
+                document.querySelectorAll('.tts-play-btn').forEach(btn => btn.style.display = 'none');
+                return;
+            }
+
+            // Load voices initially
+            loadVoices();
+            // And load them again if the list changes (it often loads asynchronously)
+            speechSynthesis.onvoiceschanged = loadVoices;
+
+            const playButtons = document.querySelectorAll('.tts-play-btn');
+            playButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const blockId = e.currentTarget.dataset.blockId;
+                    const block = scheduleData.find(b => b.id === blockId);
+                    if (block && block.kickoff) {
+                        playSystemTTS(block.kickoff);
+                    }
+                });
+            });
+        }
+
+        // --- AI Chat Functions ---
+        function toggleChatModal(show) {
+            if (show) {
+                contextBar.textContent = `Asking about: ${currentAiContext}`;
+                chatModal.classList.remove('hidden');
+            } else {
+                chatModal.classList.add('hidden');
+            }
+        }
+
+        function addMessageToLog(message, isUser) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isUser ? 'chat-bubble-user' : 'chat-bubble-ai'}`;
+            // Sanitize text content
+            bubble.textContent = message;
+            chatLog.appendChild(bubble);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        async function handleChatSend() {
+            const userQuery = chatInput.value.trim();
+            if (userQuery === "") return;
+
+            addMessageToLog(userQuery, true);
+            chatInput.value = "";
+            loadingIndicator.classList.remove('hidden');
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            const systemPrompt = `You are a friendly and encouraging AI helper for a student named Dexter (Year 8).
+His current task is: "${currentAiContext}".
+Your goal is to help him with his questions about this task. Do not just give the answer.
+Use simple language and try to guide him to find the answer himself (Socratic method).
+Keep your answers concise and focused on the task.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const aiResponse = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!aiResponse.ok) {
+                    throw new Error(`API error: ${aiResponse.statusText}`);
+                }
+
+                const result = await aiResponse.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    addMessageToLog(text, false);
+                } else {
+                    addMessageToLog("Sorry, I couldn't get a response. Please try again.", false);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                addMessageToLog("Sorry, something went wrong. Check the console for details.", false);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+        }
+        
+        async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 429 && retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                return response;
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+        function initAiChat() {
+            helpButton.addEventListener('click', () => toggleChatModal(true));
+            chatCloseButton.addEventListener('click', () => toggleChatModal(false));
+            chatSendButton.addEventListener('click', handleChatSend);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleChatSend();
+                }
+            });
+
+            // --- Voice-to-Text Logic ---
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false; // Stop after a pause
+                recognition.interimResults = true; // Show results as they come
+                recognition.lang = 'en-US'; // Use US English
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    // Update the input field with the live transcript
+                    chatInput.value = finalTranscript + interimTranscript;
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    // Reset button appearance
+                    micButton.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
+                    micButton.classList.add('bg-gray-200', 'text-gray-700');
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    isListening = false;
+                    // Reset button appearance
+                    micButton.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
+                    micButton.classList.add('bg-gray-200', 'text-gray-700');
+                    
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        // Use chat log for error, not alert()
+                        addMessageToLog("I can't access the microphone. Please check your browser permissions.", false);
+                    }
+                };
+
+                micButton.addEventListener('click', () => {
+                    if (isListening) {
+                        recognition.stop();
+                    } else {
+                        try {
+                            recognition.start();
+                            isListening = true;
+                            // Indicate listening
+                            micButton.classList.remove('bg-gray-200', 'text-gray-700');
+                            micButton.classList.add('bg-red-500', 'text-white', 'animate-pulse');
+                        } catch(e) {
+                            console.error("Could not start recognition: ", e);
+                        }
+                    }
+                });
+
+            } else {
+                // Speech recognition not supported
+                console.warn("Speech recognition not supported in this browser.");
+                micButton.style.display = 'none'; // Hide the mic button
+            }
+        }
+
+        // --- Initialization ---
+        // Run timer and AI chat immediately on load
+        runTimer();
+        // initAiChat(); // AI Helper parked for now
+        initTTS(); // Initialize the new System TTS buttons
+        
+    </script>
+
+</body>
+</html>
