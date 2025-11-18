@@ -507,7 +507,7 @@
     </button>
 
     <!-- Load Tone.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" onload="initSound()" async defer></script>
     
     <!-- Main page script -->
     <script>
@@ -529,6 +529,8 @@
         let ukFemaleVoice = null; // Variable to hold the selected voice
         let fiveMinWarningPlayed = {}; // Object to track warnings for each block
         let worker; // Web Worker for background timer
+        let lastMinute = -1; // For audio test
+        let audioTestArmed = false; // For audio test
 
         // --- Task Completion State ---
         const taskCompletion = {
@@ -599,7 +601,8 @@
                 const nowTime = now.getTime();
                 
                 // Use a simple time string format that doesn't rely on 'en-GB'
-                timeEl.textContent = now.toTimeString().split(' ')[0];
+                const timeString = now.toTimeString().split(' ')[0];
+                timeEl.textContent = timeString;
 
                 const currentBlock = schedule.find(block => nowTime >= block.start && nowTime < block.end);
                 
@@ -612,9 +615,9 @@
 
                     const timeLeftMs = currentBlock.end - nowTime;
                     const totalSecondsLeft = Math.floor(timeLeftMs / 1000);
-                    const minutes = Math.floor(totalSecondsLeft / 60);
+                    const minutesLeft = Math.floor(totalSecondsLeft / 60);
                     const seconds = totalSecondsLeft % 60;
-                    timeLeftEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    timeLeftEl.textContent = `${String(minutesLeft).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
                     const totalDuration = currentBlock.end - currentBlock.start;
                     const elapsed = nowTime - currentBlock.start;
@@ -654,6 +657,21 @@
                         }, 1500); 
                         fiveMinWarningPlayed[newBlockId] = true;
                     }
+                    
+                    // --- Subtle Audio Test Logic ---
+                    const currentMinute = now.getMinutes();
+                    if (audioTestArmed && lastMinute !== -1 && currentMinute !== lastMinute) {
+                        console.log("Running subtle audio test...");
+                        playChimeSound();
+                        const timeForTTS = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }).replace(":", " ");
+                        const testText = `The time is ${timeForTTS}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
+                        setTimeout(() => {
+                            playSystemTTS(testText);
+                        }, 1500);
+                        audioTestArmed = false; // Only run once
+                    }
+                    lastMinute = currentMinute; // Track minute change
+
 
                 } else {
                     progressBarEl.style.width = `0%`;
@@ -992,15 +1010,20 @@
             // 3. Warm up System TTS
             if ('speechSynthesis' in window) {
                 loadVoices(); // Try to load voices
+                // Speaking a single space is the most reliable cross-browser warmup
                 const warmUpUtterance = new SpeechSynthesisUtterance(' ');
                 speechSynthesis.speak(warmUpUtterance);
                 console.log('Speech synthesis API warmed up.');
             }
+            
+            // 4. Arm the audio test
+            lastMinute = new Date().getMinutes();
+            audioTestArmed = true;
 
-            // 4. Start the main timer (Web Worker)
+            // 5. Start the main timer (Web Worker)
             runTimer();
             
-            // 5. Init other features
+            // 6. Init other features
             initTTS();
             initCompletion();
         }
