@@ -4,521 +4,481 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dexter's Tuesday Plan</title>
-    <!-- Load Tailwind CSS 18/11 0938-->
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tone.js will be loaded at the bottom -->
+    <!-- Load Tone.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    
     <style>
-        /* [FIX]: Moved @import to the top */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
-        /* Custom styles */
-        html {
-            scroll-behavior: smooth; /* Enable smooth scrolling */
-        }
+        /* --- Core Visuals --- */
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Gray-100 */
+            color: #1f2937; /* Gray-800 */
         }
         
+        /* --- Schedule Blocks --- */
+        .schedule-block {
+            background-color: white;
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            margin-bottom: 1.5rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        /* Active State - Blue Border & Highlight */
         .current-block {
-            border-width: 4px;
             border-color: #3b82f6; /* blue-500 */
-            transform: scale(1.02);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-width: 4px;
+            transform: scale(1.01);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             opacity: 1;
         }
+
+        /* Completed State - Greyed Out */
         .completed-block {
-            background-color: #f3f4f6; /* bg-gray-100 */
+            background-color: #f9fafb; /* gray-50 */
             opacity: 0.6;
+            border-color: #e5e7eb; /* gray-200 */
         }
         
+        /* Task Status Colors */
         .task-card-complete {
              border-color: #10b981; /* green-500 */
-             background-color: #f0fdf4; /* green-50 */
+             background-color: #ecfdf5; /* green-50 */
         }
-        /* [FIX]: Use amber for "missed" instead of red */
+        
         .task-card-missed {
             border-color: #f59e0b; /* amber-500 */
             background-color: #fffbeb; /* amber-50 */
-            border-width: 2px;
         }
 
-        /* Progress bar styles */
+        /* --- Components --- */
         .progress-bar-container {
             width: 100%;
-            background-color: #1d4ed8; /* darker blue */
-            border-radius: 4px;
+            background-color: #1e40af; /* blue-800 */
+            border-radius: 0.25rem;
             overflow: hidden;
-            height: 1.25rem; /* 20px */
+            height: 1.25rem;
         }
         .progress-bar {
             height: 100%;
-            background-color: #60a5fa; /* lighter blue */
+            background-color: #60a5fa; /* blue-400 */
             width: 0%;
             transition: width 0.5s ease-out;
             text-align: right;
             padding-right: 8px;
-            color: #1e3a8a;
+            color: #0f172a;
             font-weight: bold;
             font-size: 0.75rem;
             line-height: 1.25rem;
         }
 
-        /* Pulsing animation for approval button */
-        @keyframes pulse-green {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 12px rgba(16, 185, 129, 0);
-            }
-        }
-        .pulse-approval {
-            animation: pulse-green 2s infinite;
-        }
-        
-        /* Reminder box */
         .reminder-box {
             background-color: #fffbeb; /* yellow-50 */
-            border: 1px solid #fde68a; /* yellow-200 */
-            border-left-width: 4px;
-            border-left-color: #facc15; /* yellow-400 */
-            padding: 0.75rem; /* p-3 */
-            margin-top: 1rem; /* mt-4 */
-            border-radius: 0.375rem; /* rounded-md */
+            border-left: 4px solid #facc15; /* yellow-400 */
+            padding: 0.75rem;
+            margin-top: 1rem;
+            color: #92400e; /* yellow-800 */
+            font-weight: 600;
         }
 
-        /* Start Button Overlay */
+        /* --- Start Overlay (Modal Style) --- */
         #start-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.7);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Dark overlay */
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease;
+        }
+        
+        #start-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
+<body class="p-4 md:p-8">
 
-    <!-- Start Button Overlay -->
+    <!-- Start Overlay -->
     <div id="start-overlay">
-        <button id="start-schedule-btn" class="bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg hover:bg-blue-700 transition-all">
-            Start Schedule
-        </button>
+        <div id="start-box">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Tuesday, 18th</h1>
+            <p class="text-gray-600 mb-6">Click start to enable the schedule timer and audio.</p>
+            <button id="start-schedule-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
+                Start Schedule
+            </button>
+        </div>
     </div>
 
-    <div id="main-content" class="max-w-3xl mx-auto hidden">
+    <!-- App Content Wrapper -->
+    <div id="app-content" class="max-w-3xl mx-auto">
         
         <!-- Header -->
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-blue-600">TUESDAY'S PLAN</h1>
-            <p class="text-2xl text-gray-600">For Dexter (18th)</p>
+            <h1 class="text-4xl font-bold text-blue-600">TODAY'S PLAN</h1>
+            <p class="text-2xl text-gray-600">For Dexter</p>
         </header>
 
-        <!-- Status Section -->
-        <div id="status-section" class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8 text-center sticky top-4 z-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- Status Sticky Bar -->
+        <div id="status-section" class="bg-blue-600 text-white p-4 rounded-lg shadow-lg mb-8 sticky top-4 z-50">
+            <div class="flex justify-between items-center mb-2">
                 <div>
-                    <div class="text-sm font-medium text-blue-200 uppercase">Current Time (UK)</div>
-                    <div id="current-time" class="text-3xl font-bold">12:00:00 PM</div>
+                    <div class="text-xs text-blue-200 uppercase">Time</div>
+                    <div id="current-time" class="text-2xl font-bold">--:--</div>
                 </div>
-                <div>
-                    <div class="text-sm font-medium text-blue-200 uppercase">Current Activity</div>
-                    <div id="current-activity" class="text-3xl font-bold">--</div>
+                <div class="text-right">
+                    <div class="text-xs text-blue-200 uppercase">Current Task</div>
+                    <div id="current-activity" class="text-xl font-bold">--</div>
                 </div>
             </div>
-            <!-- Time Left and Progress Bar -->
-            <div id="timer-details" class="hidden">
-                <div class="text-sm font-medium text-blue-200 uppercase mb-2">Time Left in Session</div>
-                <div id="time-left" class="text-2xl font-bold mb-3">00:00</div>
+            
+            <!-- Timer Details -->
+            <div id="timer-details" class="hidden border-t border-blue-500 pt-2 mt-2">
+                <div class="flex justify-between items-end mb-1">
+                    <span class="text-sm font-medium text-blue-100">Time Remaining</span>
+                    <span id="time-left" class="text-xl font-bold">00:00</span>
+                </div>
                 <div class="progress-bar-container">
                     <div id="progress-bar" class="progress-bar"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Schedule -->
-        <main id="schedule-container" class="space-y-6">
-
-            <!-- Block 1: Tutor Time -->
-            <section id="block-0830" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+        <!-- Schedule Container -->
+        <main id="schedule-container" class="space-y-4 pb-24">
+             <!-- Schedule blocks will be targeted by JS -->
+             
+            <!-- 1. Tutor Time -->
+            <section id="block-0830" class="schedule-block">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Tutor Time / Prep</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-0830" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Tutor Time / Prep
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-0830" title="Play instructions">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">8:30 - 9:00</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">8:30 - 9:00</span>
                 </div>
-                <p class="text-gray-600 mb-2">Get ready for the day. Check MS Teams and your schedule.</p>
-                <p class="font-semibold text-gray-700">Prep for:</p>
+                <p class="text-gray-600 mb-2">Get ready for the day. Check MS Teams.</p>
                 <ul class="list-disc list-inside text-gray-600">
                     <li>Maths (Get Sparx Maths login ready)</li>
                     <li>Core Skills (Check Teams for tasks)</li>
                 </ul>
             </section>
 
-            <!-- Block 2: Maths (Sparx) -->
-            <section id="block-0900" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-0900">
+            <!-- 2. Maths -->
+            <section id="block-0900" class="schedule-block academic-task" data-task-id="block-0900">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">Maths (P1) - Sparx</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-0900" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Maths (P1) - Sparx
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-0900">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">9:00 - 9:50</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">9:00 - 9:50</span>
                 </div>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's lesson and login to <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li>
-                    <li><b>Task:</b> Complete your assigned Sparx homework.</li>
-                    <li><b>Goal:</b> Finish all tasks at 100%. If done, check MS Teams for any extension work.</li>
+                    <li>Check MS Teams for lesson.</li>
+                    <li>Login to <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li>
+                    <li><b>Goal:</b> Complete assigned homework to 100%.</li>
                 </ul>
                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-0900">
                     Mark as Complete
                 </button>
             </section>
-            
-            <!-- Block 3: Short Break -->
-            <section id="block-0950" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+
+            <!-- 3. Break -->
+            <section id="block-0950" class="schedule-block">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Short Break</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-0950" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">9:50 - 9:55</span>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">Short Break</h2>
+                    <span class="text-lg font-semibold text-gray-500">9:50 - 9:55</span>
                 </div>
-                <p class="text-gray-600">Quick stretch and reset before Core Skills.</p>
+                <p class="text-gray-600">Quick stretch.</p>
             </section>
 
-            <!-- Block 4: Core Skills (P2) -->
-            <section id="block-0955" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-0955">
+            <!-- 4. Core Skills 1 -->
+            <section id="block-0955" class="schedule-block academic-task" data-task-id="block-0955">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">Core Skills (P2)</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-0955" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Core Skills (P2)
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-0955">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">9:55 - 10:45</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">9:55 - 10:45</span>
                 </div>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's Core Skills tasks.</li>
-                    <li><b>Fallback Task:</b> If no work, go to <a href="https://www.typingclub.com/" target="_blank" class="text-blue-600 underline">TypingClub</a> and practice for 15-20 minutes.</li>
-                    <li><b>Goal:</b> Complete assigned work or 3-4 typing lessons.</li>
+                    <li>Check MS Teams for tasks.</li>
+                    <li>Fallback: 20 mins <a href="https://www.typingclub.com/" target="_blank" class="text-blue-600 underline">TypingClub</a>.</li>
+                    <li><b>Goal:</b> Finish assigned work or 3-4 typing levels.</li>
                 </ul>
-                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-0955">
-                    Mark as Complete
-                </button>
-            </section>
-            
-            <!-- Block 5: Morning Break -->
-            <section id="block-1045" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Morning Break</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1045" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">10:45 - 11:15</span>
-                </div>
-                <p class="text-gray-600">Proper break. Get a snack, move around, and get away from the screen.</p>
-            </section>
-            
-            <!-- Block 6: Core Skills (P3) -->
-            <section id="block-1115" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-1115">
-                <div class="flex justify-between items-center mb-2">
-                     <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">Core Skills (P3)</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1115" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">11:15 - 12:05</span>
-                </div>
-                <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's Core Skills tasks.</li>
-                    <li><b>Fallback Task:</b> If no work, go to <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize KS3</a>. Pick one English or Maths topic to review.</li>
-                    <li><b>Goal:</b> Complete one full topic or reading/writing exercise.</li>
-                </ul>
-                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1115">
-                    Mark as Complete
-                </button>
-            </section>
-            
-            <!-- Block 7: Short Break -->
-            <section id="block-1205" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Short Break</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1205" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">12:05 - 12:10</span>
-                </div>
-                <p class="text-gray-600">Quick reset before Science.</p>
-            </section>
-            
-            <!-- Block 8: How Science Works -->
-            <section id="block-1210" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-1210">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">How Science Works (P4)</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1210" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">12:10 - 13:00</span>
-                </div>
-                <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's Science lesson.</li>
-                    <li><b>Fallback Task:</b> If no work, go to <a href="https://classroom.thenational.academy/subjects-by-year/year-8/subjects/science" target="_blank" class="text-blue-600 underline">Oak National Academy (Y8 Science)</a>.</li>
-                    <li><b>Goal:</b> Watch the video, do the quiz, and complete the worksheet.</li>
-                </ul>
-                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1210">
+                <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-0955">
                     Mark as Complete
                 </button>
             </section>
 
-            <!-- Block 9: Lunch & Dog Walk -->
-            <section id="block-1300" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+            <!-- 5. Morning Break -->
+            <section id="block-1045" class="schedule-block">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Lunch & Dog Walk</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1300" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">13:00 - 14:00</span>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">Morning Break</h2>
+                    <span class="text-lg font-semibold text-gray-500">10:45 - 11:15</span>
                 </div>
-                <p class="text-gray-600">Full hour break. Eat, hydrate, and take the dog for a walk.</p>
+                <p class="text-gray-600">Snack time. Move away from the screen.</p>
             </section>
-            
-            <!-- Block 10: Tutor Time PM -->
-            <section id="block-1400" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+
+            <!-- 6. Core Skills 2 -->
+            <section id="block-1115" class="schedule-block academic-task" data-task-id="block-1115">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Tutor Time PM / Prep</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1400" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Core Skills (P3)
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1115">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">14:00 - 14:15</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">11:15 - 12:05</span>
                 </div>
-                <p class="text-gray-600 mb-2">Quick check-in. Get ready for the afternoon lessons.</p>
-                <p class="font-semibold text-gray-700">Prep for:</p>
+                <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
+                    <li>Check MS Teams.</li>
+                    <li>Fallback: <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize KS3</a> English or Maths.</li>
+                    <li><b>Goal:</b> Complete one full topic/lesson.</li>
+                </ul>
+                <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1115">
+                    Mark as Complete
+                </button>
+            </section>
+
+            <!-- 7. Short Break -->
+            <section id="block-1205" class="schedule-block">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-blue-700">Short Break</h2>
+                    <span class="text-lg font-semibold text-gray-500">12:05 - 12:10</span>
+                </div>
+                <p class="text-gray-600">Reset for Science.</p>
+            </section>
+
+            <!-- 8. Science -->
+            <section id="block-1210" class="schedule-block academic-task" data-task-id="block-1210">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        How Science Works (P4)
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1210">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                        </button>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">12:10 - 13:00</span>
+                </div>
+                <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
+                    <li>Check MS Teams.</li>
+                    <li>Fallback: <a href="https://classroom.thenational.academy/subjects-by-year/year-8/subjects/science" target="_blank" class="text-blue-600 underline">Oak Academy Science</a>.</li>
+                    <li><b>Goal:</b> Watch video & complete quiz.</li>
+                </ul>
+                <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1210">
+                    Mark as Complete
+                </button>
+            </section>
+
+            <!-- 9. Lunch -->
+            <section id="block-1300" class="schedule-block">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Lunch & Dog Walk
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                        </button>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">13:00 - 14:00</span>
+                </div>
+                <p class="text-gray-600">Eat lunch, drink water, walk the dog.</p>
+            </section>
+
+            <!-- 10. Tutor PM -->
+            <section id="block-1400" class="schedule-block">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Tutor Time PM / Prep
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1400">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                        </button>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">14:00 - 14:15</span>
+                </div>
+                <p class="text-gray-600 mb-1">Prep for afternoon:</p>
                 <ul class="list-disc list-inside text-gray-600">
-                    <li>Geography (Check Teams for task)</li>
-                    <li>Biology (Check Teams for task)</li>
-                    <li>Coach Call @ 3:30 PM (Find the Zoom link)</li>
+                    <li>Geography & Biology tasks.</li>
+                    <li><b>Coach Call @ 3:30 PM</b> (Find Zoom link now).</li>
                 </ul>
             </section>
-            
-            <!-- Block 11: Geography -->
-            <section id="block-1415" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-1415">
+
+            <!-- 11. Geography -->
+            <section id="block-1415" class="schedule-block academic-task" data-task-id="block-1415">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">Geography (P5)</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1415" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Geography (P5)
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1415">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">14:15 - 15:05</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">14:15 - 15:05</span>
                 </div>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's Geography lesson or project work.</li>
-                    <li><b>Fallback Task:</b> If no work, go to <a href="https://www.bbc.co.uk/bitesize/subjects/zrw76sg" target="_blank" class="text-blue-600 underline">BBC Bitesize KS3 Geography</a> and explore a new topic.</li>
-                    <li><b>Goal:</b> Complete the assigned work or write 5 key facts about a new topic.</li>
+                    <li>Check MS Teams.</li>
+                    <li>Fallback: <a href="https://www.bbc.co.uk/bitesize/subjects/zrw76sg" target="_blank" class="text-blue-600 underline">BBC Bitesize Geography</a>.</li>
+                    <li><b>Goal:</b> Complete task or write 5 facts.</li>
                 </ul>
-                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1415">
+                <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1415">
                     Mark as Complete
                 </button>
-                <!-- Coach Reminder (1 hour) -->
                 <div class="reminder-box">
-                    <p class="font-semibold text-yellow-800">REMINDER: Your coach session is at 3:30 PM (in ~1 hour).</p>
+                    REMINDER: Coach session in ~1 hour (3:30 PM).
                 </div>
             </section>
-            
-            <!-- Block 12: Short Break -->
-            <section id="block-1505" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+
+            <!-- 12. Break -->
+            <section id="block-1505" class="schedule-block">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Short Break</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1505" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">15:05 - 15:10</span>
+                    <h2 class="text-2xl font-bold text-blue-700">Short Break</h2>
+                    <span class="text-lg font-semibold text-gray-500">15:05 - 15:10</span>
                 </div>
-                <p class="text-gray-600">Final quick break. Get ready for the last lesson.</p>
+                <p class="text-gray-600">Last break before coach call.</p>
             </section>
-            
-            <!-- Block 13: Biology -->
-            <section id="block-1510" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300 academic-task" data-task-id="block-1510">
+
+            <!-- 13. Biology -->
+            <section id="block-1510" class="schedule-block academic-task" data-task-id="block-1510">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <svg class="w-6 h-6 text-green-500 check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-2xl font-bold text-blue-700">Biology (P6)</h2>
-                        <button class="tts-play-btn text-blue-500 hover:text-blue-700" data-block-id="block-1510" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        Biology (P6)
+                        <button class="tts-play-btn ml-2 text-gray-400 hover:text-blue-600" data-block-id="block-1510">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">15:10 - 15:28</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">15:10 - 15:28</span>
                 </div>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Check MS Teams for today's Biology lesson.</li>
-                    <li><b>Fallback Task:</b> If no work, go to <a href="https://www.bbc.co.uk/bitesize/subjects/z4882hv" target="_blank" class="text-blue-600 underline">BBC Bitesize KS3 Biology</a> and complete a topic test.</li>
-                    <li><b>Goal:</b> Complete the task before the coach call.</li>
+                    <li>Check MS Teams.</li>
+                    <li>Fallback: <a href="https://www.bbc.co.uk/bitesize/subjects/z4882hv" target="_blank" class="text-blue-600 underline">BBC Bitesize Biology</a>.</li>
+                    <li><b>Goal:</b> Complete before coach call.</li>
                 </ul>
-                 <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1510">
+                <button class="complete-btn hidden w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-all" data-task-id="block-1510">
                     Mark Biology as Complete
                 </button>
-                 <!-- Coach Reminder (15 min) -->
                  <div class="reminder-box">
-                    <p class="font-semibold text-yellow-800">REMINDER: Your coach call is at 3:30 PM (in ~15-20 minutes).</p>
+                    REMINDER: Coach call in 15 mins (3:30 PM).
                 </div>
             </section>
 
-            <!-- Block 14: Coach Prep Time -->
-            <section id="block-1528" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+            <!-- 14. Coach Prep -->
+            <section id="block-1528" class="schedule-block border-l-4 border-purple-500">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-purple-700">Coach Prep Time</h2>
-                        <button class="tts-play-btn text-purple-500 hover:text-purple-700" data-block-id="block-1528" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-purple-700 flex items-center">
+                        Coach Prep Time
+                        <button class="tts-play-btn ml-2 text-purple-400 hover:text-purple-600" data-block-id="block-1528">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">15:28 - 15:30</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">15:28 - 15:30</span>
                 </div>
-                <p class="text-gray-600">Time to get ready for your coach call. Get a drink and find the Zoom link.</p>
-            </section>
-            
-            <!-- Block 15: Coach Zoom Session -->
-            <section id="block-1530" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-purple-700">Coach Zoom Session</h2>
-                        <button class="tts-play-btn text-purple-500 hover:text-purple-700" data-block-id="block-1530" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">15:30 - 15:45</span>
-                </div>
-                <p class="text-gray-600">Join the call. Focus on the life skills and problem-solving. This isn't about gaming.</p>
-            </section>
-            
-            <!-- Block 16: Quick Challenge -->
-            <section id="block-1545" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-orange-700">Quick Challenge</h2>
-                        <button class="tts-play-btn text-orange-500 hover:text-orange-700" data-block-id="block-1545" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">15:45 - 16:00</span>
-                </div>
-                <p class="text-gray-600 mb-4">Time for a 15 minute creative wind-down. Go to <a href="https://quickdraw.withgoogle.com/" target="_blank" class="text-blue-600 underline">Quick Draw</a> and see what you can get!</p>
+                <p class="text-gray-600">Grab a drink. Open Zoom.</p>
             </section>
 
-            <!-- Block 17: Free Time -->
-            <section id="block-1600" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+            <!-- 15. Coach Zoom -->
+            <section id="block-1530" class="schedule-block border-l-4 border-purple-500">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-gray-700">Free Time / Wind Down</h2>
-                        <button class="tts-play-btn text-gray-500 hover:text-gray-700" data-block-id="block-1600" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-purple-700 flex items-center">
+                        Coach Zoom Session
+                        <button class="tts-play-btn ml-2 text-purple-400 hover:text-purple-600" data-block-id="block-1530">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">16:00 - 16:30</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">15:30 - 15:45</span>
                 </div>
-                <p class="text-gray-600 mb-4">Well done. 30 minutes of free time to relax before your gaming hour.</p>
+                <p class="text-gray-600">Focus on problem-solving skills.</p>
             </section>
 
-            <!-- Block 18: Incentive Time! -->
-            <section id="block-1630" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
+            <!-- 16. Quick Challenge -->
+            <section id="block-1545" class="schedule-block">
                 <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-green-700">Incentive Time!</h2>
-                        <button class="tts-play-btn text-green-500 hover:text-green-700" data-block-id="block-1630" title="Read message">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
+                    <h2 class="text-2xl font-bold text-orange-600 flex items-center">
+                        Quick Challenge
+                        <button class="tts-play-btn ml-2 text-orange-400 hover:text-orange-600" data-block-id="block-1545">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
                         </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">16:30 - 17:30</span>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">15:45 - 16:00</span>
                 </div>
-                
-                <!-- This section is conditional -->
+                <p class="text-gray-600 mb-4">Wind down. Try <a href="https://quickdraw.withgoogle.com/" target="_blank" class="text-blue-600 underline">Google Quick Draw</a>.</p>
+            </section>
+
+            <!-- 17. Free Time -->
+            <section id="block-1600" class="schedule-block">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-gray-700">Free Time</h2>
+                    <span class="text-lg font-semibold text-gray-500">16:00 - 16:30</span>
+                </div>
+                <p class="text-gray-600">Relax before gaming.</p>
+            </section>
+
+            <!-- 18. Incentive -->
+            <section id="block-1630" class="schedule-block">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold text-green-600 flex items-center">
+                        Incentive Time!
+                        <button class="tts-play-btn ml-2 text-green-400 hover:text-green-600" data-block-id="block-1630">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                        </button>
+                    </h2>
+                    <span class="text-lg font-semibold text-gray-500">16:30 - 17:30</span>
+                </div>
+
+                <!-- Locked State -->
                 <div id="incentive-locked">
-                    <p class="text-gray-600 text-lg mb-4">Complete at least 4 tasks to unlock the reward.</p>
-                    <div classs="w-full bg-gray-200 rounded-full h-4 mb-2">
+                    <p class="text-gray-600 mb-2">Complete 4 tasks to unlock.</p>
+                    <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
                         <div id="task-progress-bar" class="bg-blue-600 h-4 rounded-full" style="width: 0%"></div>
                     </div>
-                    <p id="task-progress-text" class="text-center font-semibold text-gray-700">Tasks Complete: 0 / 6</p>
-                    
-                    <button id="parent-approval-btn" class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition-all mt-4 cursor-not-allowed" disabled>
-                        Awaiting 4 Tasks...
+                    <p id="task-progress-text" class="text-center font-bold text-gray-700">0 / 6 Tasks</p>
+                    <button id="parent-approval-btn" class="w-full mt-4 bg-gray-300 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed" disabled>
+                        Awaiting Tasks...
                     </button>
                 </div>
 
-                <div id="incentive-unlocked" class="hidden text-center">
-                    <p class="text-2xl font-bold text-green-600">REWARD UNLOCKED!</p>
-                    <p class="text-gray-600 text-lg mb-4">Great work today, Dexter!</p>
-                    <div class="mt-4 p-4 bg-green-100 border border-green-300 rounded-md">
-                        <strong class="text-green-800 text-xl">Reward:</strong> 1 Hour Gaming Time
-                    </div>
+                <!-- Unlocked State -->
+                <div id="incentive-unlocked" class="hidden mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg text-center">
+                    <h3 class="text-2xl font-bold text-green-700 mb-2">REWARD UNLOCKED!</h3>
+                    <p class="text-green-800 text-xl">1 Hour Gaming Time</p>
                 </div>
             </section>
-            
-            <!-- Block 19: All Done -->
-            <section id="block-1730" class="bg-white p-6 rounded-lg shadow-md transition-all duration-300">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-gray-700">All Done!</h2>
-                        <button class="tts-play-btn text-gray-500 hover:text-gray-700" data-block-id="block-1730" title="Read instructions">
-                            <svg class="w-6 h-6 play-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
-                        </button>
-                    </div>
-                    <span class="text-lg font-semibold text-gray-700">17:30 onwards</span>
+
+            <!-- 19. Done -->
+            <section id="block-1730" class="schedule-block">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-700">All Done!</h2>
+                    <span class="text-lg font-semibold text-gray-500">17:30+</span>
                 </div>
-                <p class="text-gray-600 mb-4">Day complete. Well done.</p>
             </section>
 
         </main>
     </div>
 
-    <!-- AI Helper Button (Parked) -->
-    <button id="ai-help-button" class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-transform opacity-50 cursor-not-allowed" disabled title="AI Helper (Coming Soon)">
-        <!-- SVG Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2M12 12h.008v.008H12V12z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a.96.96 0 01-.844-.455l-3.037-4.556A.96.96 0 018 12.03V10a.96.96 0 01.844-.949l3.037-1.518A.96.96 0 0113 8.443v2.162a.96.96 0 01-.844.949l-3.037 1.518a.96.96 0 01-.119.026z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-        </svg>
-    </button>
-
-    <!-- Load Tone.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" onload="initSound()" async defer></script>
-    
-    <!-- Main page script -->
+    <!-- Scripts -->
     <script>
-        // Script last updated: 2025-11-18 09:37 AM GMT
-    
-        // --- DOM Elements ---
+        // Script last updated: 2025-11-18 14:16 PM GMT
+        
+        // DOM Elements
         const timeEl = document.getElementById('current-time');
         const activityEl = document.getElementById('current-activity');
         const timeLeftEl = document.getElementById('time-left');
@@ -526,587 +486,332 @@
         const progressBarEl = document.getElementById('progress-bar');
         const startOverlayEl = document.getElementById('start-overlay');
         const startBtnEl = document.getElementById('start-schedule-btn');
-        const mainContentEl = document.getElementById('main-content');
-        
-        // --- State Variables ---
-        let toneSoundEnabled = false; // For Tone.js (chimes)
-        let userInteracted = false; // For all audio (chimes + TTS)
-        let currentBlockId = null;
-        let chimeSound, completeSound; // Will be initialized as Tone.Players
-        let ukFemaleVoice = null; // Variable to hold the selected voice
-        let fiveMinWarningPlayed = {}; // Object to track warnings for each block
-        let worker; // Web Worker for background timer
-        let lastMinute = -1; // For audio test
-        let audioTestArmed = false; // For audio test
+        const appContentEl = document.getElementById('app-content');
 
-        // --- Smart Scroll Logic ---
+        // State
+        let userInteracted = false;
+        let chimeSound = null;
+        let completeSound = null;
+        let ukFemaleVoice = null;
+        let currentBlockId = null;
+        let fiveMinWarningPlayed = {};
+        let audioTestArmed = false;
+        let lastMinute = -1;
+        
+        // Logic State
         let isUserScrolling = false;
         let scrollTimeout = null;
-        const SCROLL_RESET_DELAY = 60000; // 1 minute (in ms)
-
-        // --- Task Completion State ---
+        
         const taskCompletion = {
-            'block-0900': false, // Maths
-            'block-0955': false, // Core Skills 1
-            'block-1115': false, // Core Skills 2
-            'block-1210': false, // Science
-            'block-1415': false, // Geography
-            'block-1510': false  // Biology
+            'block-0900': false, 'block-0955': false, 'block-1115': false,
+            'block-1210': false, 'block-1415': false, 'block-1510': false
         };
-        const totalTasks = Object.keys(taskCompletion).length;
-        const requiredTasks = 4; // *** Only 4 tasks required ***
-        const incentiveProgressText = document.getElementById('task-progress-text');
-        const incentiveProgressBar = document.getElementById('task-progress-bar');
-        const parentApprovalBtn = document.getElementById('parent-approval-btn');
+        const totalTasks = 6;
+        const requiredTasks = 4;
 
-        // --- Schedule Data with Kickoff Text (UPDATED) ---
+        // Data
         const scheduleData = [
-            { id: 'block-0830', title: 'Tutor Time / Prep', kickoff: "Time to start the day. Let's get prepped. Check MS Teams and see what you need for Maths and Core Skills." },
-            { id: 'block-0900', title: 'Maths (P1) - Sparx', kickoff: "First lesson: Maths. Check MS Teams for your work and log in to Sparx Maths." },
-            { id: 'block-0950', title: 'Short Break', kickoff: "Quick 5-minute break. Stand up and stretch." },
-            { id: 'block-0955', title: 'Core Skills (P2)', kickoff: "Time for Core Skills. Check MS Teams for your tasks. If nothing is set, do some typing practice on TypingClub." },
-            { id: 'block-1045', title: 'Morning Break', kickoff: "Proper break time. Have a snack and get away from the screen." },
-            { id: 'block-1115', title: 'Core Skills (P3)', kickoff: "Core Skills session. Check MS Teams for work. If nothing is set, try a lesson on BBC Bitesize English or Maths." },
-            { id: 'block-1205', title: 'Short Break', kickoff: "Another quick 5-minute reset before Science." },
-            { id: 'block-1210', title: 'How Science Works (P4)', kickoff: "Science time. Check MS Teams or use the Oak National Academy link." },
-            { id: 'block-1300', title: 'Lunch & Dog Walk', kickoff: "Lunch time! Eat well, hydrate, and take the dog for a good walk." },
-            { id: 'block-1400', title: 'Tutor Time PM / Prep', kickoff: "Quick tutor check-in. Let's prep for the afternoon: find your tasks for Geography and Biology, and get the Zoom link for your 3:30 coach call." },
-            { id: 'block-1415', title: 'Geography (P5)', kickoff: "Time for Geography. Check MS Teams or use the BBC Bitesize link. Also, a reminder, your coach session is at 3:30 PM." },
-            { id: 'block-1505', title: 'Short Break', kickoff: "Final quick break. Nearly there." },
-            { id: 'block-1510', title: 'Biology (P6)', kickoff: "Biology time. Let's get this task done. You need to finish it before your coach call." },
-            { id: 'block-1528', title: 'Coach Prep Time', kickoff: "Coach Prep Time! Just two minutes. Grab a drink and get the Zoom link ready. Session starts at 3:30." },
-            { id: 'block-1530', title: 'Coach Zoom Session', kickoff: "Time for your coach session. Focus on the problem-solving skills. You've got this." },
-            { id: 'block-1545', title: 'Quick Challenge', kickoff: "Okay, 15-minute wind-down. Go to Google's Quick Draw and have some fun." },
-            { id: 'block-1600', title: 'Free Time / Wind Down', kickoff: "Well done. 30 minutes of free time to relax before your gaming hour." },
-            { id: 'block-1630', title: 'Incentive Time!', kickoff: "You've earned it! Your hour of gaming time starts now, until 5:30." },
-            { id: 'block-1730', title: 'All Done!', kickoff: "Day complete. Well done." }
+            { id: 'block-0830', title: 'Tutor Time / Prep', kickoff: "Time to start. Get prepped. Check Teams for Maths and Core Skills." },
+            { id: 'block-0900', title: 'Maths (P1) - Sparx', kickoff: "Maths time. Check Teams and login to Sparx." },
+            { id: 'block-0950', title: 'Short Break', kickoff: "Quick 5-minute break." },
+            { id: 'block-0955', title: 'Core Skills (P2)', kickoff: "Core Skills. Check Teams or use Typing Club." },
+            { id: 'block-1045', title: 'Morning Break', kickoff: "Morning break. Snack time." },
+            { id: 'block-1115', title: 'Core Skills (P3)', kickoff: "Core Skills session. Check Teams or Bitesize." },
+            { id: 'block-1205', title: 'Short Break', kickoff: "Quick reset before Science." },
+            { id: 'block-1210', title: 'How Science Works (P4)', kickoff: "Science time. Check Teams or Oak Academy." },
+            { id: 'block-1300', title: 'Lunch & Dog Walk', kickoff: "Lunch time. Eat well and walk the dog." },
+            { id: 'block-1400', title: 'Tutor Time PM', kickoff: "Afternoon check-in. Prep for Geography, Biology, and your Coach Call." },
+            { id: 'block-1415', title: 'Geography (P5)', kickoff: "Geography. Check Teams or Bitesize. Remember, coach call at 3:30." },
+            { id: 'block-1505', title: 'Short Break', kickoff: "Quick break." },
+            { id: 'block-1510', title: 'Biology (P6)', kickoff: "Biology. Get this task done before your call." },
+            { id: 'block-1528', title: 'Coach Prep Time', kickoff: "Coach Prep Time. 2 minutes. Grab a drink, open Zoom." },
+            { id: 'block-1530', title: 'Coach Zoom Session', kickoff: "Coach session. Focus on problem solving." },
+            { id: 'block-1545', title: 'Quick Challenge', kickoff: "Wind down with Google Quick Draw." },
+            { id: 'block-1600', title: 'Free Time', kickoff: "30 minutes free time." },
+            { id: 'block-1630', title: 'Incentive Time!', kickoff: "Gaming hour starts now." },
+            { id: 'block-1730', title: 'All Done!', kickoff: "Day complete." }
         ];
 
-        // --- Core Logic: Schedule Update ---
-        function updateSchedule() {
-            try {
-                const today = new Date();
-                // Build schedule with dynamic times
-                const schedule = [
-                    { ...scheduleData[0], start: new Date(today).setHours(8, 30, 0, 0), end: new Date(today).setHours(9, 0, 0, 0) },
-                    { ...scheduleData[1], start: new Date(today).setHours(9, 0, 0, 0), end: new Date(today).setHours(9, 50, 0, 0) },
-                    { ...scheduleData[2], start: new Date(today).setHours(9, 50, 0, 0), end: new Date(today).setHours(9, 55, 0, 0) },
-                    { ...scheduleData[3], start: new Date(today).setHours(9, 55, 0, 0), end: new Date(today).setHours(10, 45, 0, 0) },
-                    { ...scheduleData[4], start: new Date(today).setHours(10, 45, 0, 0), end: new Date(today).setHours(11, 15, 0, 0) },
-                    { ...scheduleData[5], start: new Date(today).setHours(11, 15, 0, 0), end: new Date(today).setHours(12, 5, 0, 0) },
-                    { ...scheduleData[6], start: new Date(today).setHours(12, 5, 0, 0), end: new Date(today).setHours(12, 10, 0, 0) },
-                    { ...scheduleData[7], start: new Date(today).setHours(12, 10, 0, 0), end: new Date(today).setHours(13, 0, 0, 0) },
-                    { ...scheduleData[8], start: new Date(today).setHours(13, 0, 0, 0), end: new Date(today).setHours(14, 0, 0, 0) },
-                    { ...scheduleData[9], start: new Date(today).setHours(14, 0, 0, 0), end: new Date(today).setHours(14, 15, 0, 0) },
-                    { ...scheduleData[10], start: new Date(today).setHours(14, 15, 0, 0), end: new Date(today).setHours(15, 5, 0, 0) },
-                    { ...scheduleData[11], start: new Date(today).setHours(15, 5, 0, 0), end: new Date(today).setHours(15, 10, 0, 0) },
-                    { ...scheduleData[12], start: new Date(today).setHours(15, 10, 0, 0), end: new Date(today).setHours(15, 28, 0, 0) }, // Biology
-                    { ...scheduleData[13], start: new Date(today).setHours(15, 28, 0, 0), end: new Date(today).setHours(15, 30, 0, 0) }, // Coach Prep
-                    { ...scheduleData[14], start: new Date(today).setHours(15, 30, 0, 0), end: new Date(today).setHours(15, 45, 0, 0) }, // Coach
-                    { ...scheduleData[15], start: new Date(today).setHours(15, 45, 0, 0), end: new Date(today).setHours(16, 0, 0, 0) }, // Quick Challenge
-                    { ...scheduleData[16], start: new Date(today).setHours(16, 0, 0, 0), end: new Date(today).setHours(16, 30, 0, 0) }, // Free Time
-                    { ...scheduleData[17], start: new Date(today).setHours(16, 30, 0, 0), end: new Date(today).setHours(17, 30, 0, 0) }, // Incentive Time
-                    { ...scheduleData[18], start: new Date(today).setHours(17, 30, 0, 0), end: new Date(today).setHours(23, 59, 59, 0) } // All Done
-                ];
-
-                const now = new Date();
-                const nowTime = now.getTime();
-                
-                // Use a simple time string format that doesn't rely on 'en-GB'
-                const timeString = now.toTimeString().split(' ')[0];
-                timeEl.textContent = timeString;
-
-                const currentBlock = schedule.find(block => nowTime >= block.start && nowTime < block.end);
-                
-                let newBlockId = null;
-
-                if (currentBlock) {
-                    newBlockId = currentBlock.id;
-                    activityEl.textContent = currentBlock.title;
-                    activityEl.classList.remove('text-yellow-300');
-
-                    const timeLeftMs = currentBlock.end - nowTime;
-                    const totalSecondsLeft = Math.floor(timeLeftMs / 1000);
-                    const minutesLeft = Math.floor(totalSecondsLeft / 60);
-                    const seconds = totalSecondsLeft % 60;
-                    timeLeftEl.textContent = `${String(minutesLeft).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-                    const totalDuration = currentBlock.end - currentBlock.start;
-                    const elapsed = nowTime - currentBlock.start;
-                    const progressPercent = (elapsed / totalDuration) * 100;
-                    progressBarEl.style.width = `${progressPercent}%`;
-                    progressBarEl.textContent = `${Math.floor(progressPercent)}%`;
-
-                    timerDetailsEl.classList.remove('hidden');
-
-                    if (currentBlock.title.includes('Incentive') || currentBlock.title.includes('All Done')) {
-                        timerDetailsEl.classList.add('hidden');
-                    }
-
-                    // --- Task Completion Button Logic ---
-                    document.querySelectorAll('.academic-task').forEach(card => {
-                        const taskId = card.dataset.taskId;
-                        if (currentBlock.id === card.id) {
-                            const completeBtn = card.querySelector(`.complete-btn`);
-                            if (completeBtn) {
-                                if (totalSecondsLeft <= 300 && !taskCompletion[taskId]) {
-                                    completeBtn.classList.remove('hidden');
-                                } else {
-                                    completeBtn.classList.add('hidden');
-                                }
-                            }
-                        }
-                    });
-
-                    // --- 5-Minute Warning Logic ---
-                    // Check for exactly 5 minutes (300 seconds)
-                    if (totalSecondsLeft === 300 && !fiveMinWarningPlayed[newBlockId]) {
-                        console.log("Playing 5-minute warning for", newBlockId);
-                        playChimeSound();
-                        // Delay warning to not overlap with chime
-                        setTimeout(() => {
-                            playSystemTTS("Five minutes left in this session.");
-                        }, 1500); 
-                        fiveMinWarningPlayed[newBlockId] = true;
-                    }
-                    
-                    // --- Subtle Audio Test Logic ---
-                    const currentMinute = now.getMinutes();
-                    if (audioTestArmed && lastMinute !== -1 && currentMinute !== lastMinute) {
-                        console.log("Running subtle audio test...");
-                        playChimeSound();
-                        
-                        const timeForTTS = getNaturalTimeForTTS(now);
-                        const testText = `The time is ${timeForTTS}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
-                        
-                        setTimeout(() => {
-                            playSystemTTS(testText);
-                        }, 1500);
-                        audioTestArmed = false; // Only run once
-                    }
-                    lastMinute = currentMinute; // Track minute change
-
-
-                } else {
-                    progressBarEl.style.width = `0%`;
-                    progressBarEl.textContent = "";
-
-                    if (nowTime < schedule[0].start) {
-                        activityEl.textContent = "Waiting to start...";
-                        activityEl.classList.add('text-yellow-300');
-                        const timeToStart = schedule[0].start - nowTime;
-                        const minutesToStart = Math.ceil(timeToStart / 60000);
-                        timeLeftEl.textContent = `Starts in ${minutesToStart} min`;
-                        timerDetailsEl.classList.remove('hidden');
-                    } else {
-                        // This state should not be reached with the "All Done!" block
-                        activityEl.textContent = "Waiting to start...";
-                        activityEl.classList.add('text-yellow-300');
-                        timerDetailsEl.classList.add('hidden');
-                    }
-                }
-
-                schedule.forEach(block => {
-                    const blockEl = document.getElementById(block.id);
-                    if (!blockEl) return;
-                    
-                    let isTaskComplete = false;
-                    if (blockEl.classList.contains('academic-task')) {
-                         isTaskComplete = taskCompletion[blockEl.dataset.taskId];
-                    }
-
-                    if (isTaskComplete) {
-                        blockEl.classList.add('task-card-complete');
-                        blockEl.classList.remove('current-block', 'completed-block', 'task-card-missed');
-                        const checkIcon = blockEl.querySelector('.check-icon');
-                        if(checkIcon) checkIcon.classList.remove('hidden');
-                        return;
-                    }
-
-                    if (block.end < nowTime) {
-                        blockEl.classList.add('completed-block');
-                        blockEl.classList.remove('current-block');
-                        if (blockEl.classList.contains('academic-task') && !isTaskComplete) {
-                            blockEl.classList.add('task-card-missed'); // Use amber
-                        }
-                    } else if (block.id === newBlockId) {
-                        blockEl.classList.remove('completed-block', 'task-card-missed');
-                        blockEl.classList.add('current-block');
-                    } else {
-                        blockEl.classList.remove('completed-block', 'current-block', 'task-card-missed');
-                    }
-                });
-
-                // --- New Session Alert Logic ---
-                if (newBlockId !== currentBlockId) {
-                    if (currentBlockId !== null && currentBlock) {
-                        playChimeSound();
-                        scrollToCurrentBlock(newBlockId); // Smart-scroll
-                        
-                        // Play kickoff text after a delay
-                        setTimeout(() => {
-                            if (currentBlock.kickoff) {
-                                playSystemTTS(currentBlock.kickoff);
-                            }
-                        }, 1500); // 1.5 second delay after chime
-                    }
-                    currentBlockId = newBlockId;
-                }
-
-                // --- 1-Minute Idle Scroll Reset ---
-                if (!isUserScrolling && currentBlockId) {
-                    scrollToCurrentBlock(currentBlockId);
-                }
-
-            } catch (error) {
-                console.error("Error in updateSchedule:", error);
-                // Don't stop the timer, just log the error
-            }
-        }
-        
-        // --- Timer Runner ---
-        function runTimer() {
-            try {
-                // --- Web Worker for reliable background timer ---
-                const workerScript = `
-                    setInterval(() => {
-                        self.postMessage('tick');
-                    }, 1000);
-                `;
-                const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
-                const workerUrl = URL.createObjectURL(workerBlob);
-                worker = new Worker(workerUrl);
-
-                worker.onmessage = (e) => {
-                    if (e.data === 'tick') {
-                        updateSchedule(); // Run update on every 'tick' from the worker
-                    }
-                };
-                
-                worker.onerror = (e) => {
-                    console.error("Worker error:", e);
-                    // Fallback to setInterval if worker fails
-                    console.log("Worker failed, falling back to setInterval (will pause in background).");
-                    setInterval(updateSchedule, 1000);
-                };
-
-                updateSchedule(); // Run once immediately
-            } catch (error) {
-                console.error("Failed to start the main timer:", error);
-                activityEl.textContent = "Error loading schedule.";
-                // Fallback to setInterval if worker creation fails
-                setInterval(updateSchedule, 1000);
-            }
+        // --- Helpers ---
+        function getNaturalTime(date) {
+            let h = date.getHours();
+            let m = date.getMinutes();
+            let displayH = h % 12 || 12;
+            let ampm = h >= 12 ? "P M" : "A M";
+            let minStr = (m === 0) ? "o'clock" : (m < 10 ? "o " + m : m);
+            return `${displayH} ${minStr} ${ampm}`;
         }
 
-        // --- Sound Logic ---
-        function playChimeSound() {
-            if (!toneSoundEnabled || !chimeSound || !chimeSound.loaded) {
-                console.log("Chime sound not ready or not enabled.");
-                return;
-            }
-            try { chimeSound.start(); } catch (e) { console.error("Error playing chime: ", e); }
-        }
-        
-        function playCompleteSound() {
-             if (!toneSoundEnabled || !completeSound || !completeSound.loaded) {
-                console.log("Complete sound not ready or not enabled.");
-                return;
-            }
-            try { completeSound.start(); } catch (e) { console.error("Error playing complete sound: ", e); }
+        function scrollToBlock(id) {
+            if (isUserScrolling || !id) return;
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function initSound() {
-            // This function is just for the Tone.js *custom* sounds
-            // It runs *after* Tone.js is loaded
-            try {
-                if (typeof Tone === 'undefined') {
-                    console.error("Tone.js failed to load.");
-                    return;
-                }
-                
-                // If user has already clicked "Start", we can init Tone now.
-                if (userInteracted) {
-                    Tone.start().then(() => {
-                        console.log('Audio context started for Tone.js.');
-                        toneSoundEnabled = true;
-                        
-                        // [FIX] Using the googleusercontent.com URLs provided from your upload
-                        chimeSound = new Tone.Player("http://googleusercontent.com/file_content/1").toDestination();      // bingbong-42645.mp3
-                        completeSound = new Tone.Player("http://googleusercontent.com/file_content/2").toDestination(); // string-ending-14456.mp3
-
-                        Tone.loaded().then(() => {
-                            console.log("All custom sounds loaded.");
-                        }).catch(e => {
-                             console.error("Error loading custom sounds: ", e);
-                        });
-                    }).catch(e => {
-                        console.error("Error starting Tone.js: ", e);
-                    });
-                }
-            } catch (error) {
-                console.error("Error in initSound:", error);
-            }
-        }
-        
-        // --- System TTS Functions ---
-        
-        // New function for natural time
-        function getNaturalTimeForTTS(date) {
-            const hour = date.getHours();
-            const minute = date.getMinutes();
-            let displayHour = hour % 12;
-            if (displayHour === 0) displayHour = 12; // 12 for midnight/noon
-            const ampm = hour >= 12 ? 'P M' : 'A M'; // Spaced for better TTS
-            
-            let minuteString;
-            if (minute === 0) {
-                minuteString = "o'clock";
-            } else if (minute < 10) {
-                minuteString = `o' ${minute}`; // "o' five"
-            } else {
-                minuteString = `${minute}`; // "nineteen"
-            }
-            return `${displayHour} ${minuteString} ${ampm}`;
-        }
-
+        // --- Audio ---
         function loadVoices() {
-            try {
-                if (!('speechSynthesis' in window)) {
-                    console.warn("Speech synthesis not supported.");
-                    return;
-                }
-                const voices = speechSynthesis.getVoices();
-                if (voices.length === 0) {
-                    console.warn("No voices loaded yet. Will try again when list changes.");
-                    return;
-                }
-                ukFemaleVoice = voices.find(voice => voice.lang === 'en-GB' && (
-                    voice.name.includes('Google UK English Female') || 
-                    voice.name.includes('Microsoft Susan') ||
-                    voice.name.includes('Female')
-                ));
-                if (!ukFemaleVoice) {
-                    ukFemaleVoice = voices.find(voice => voice.lang === 'en-GB');
-                }
-                if (ukFemaleVoice) {
-                    console.log("Selected voice:", ukFemaleVoice.name);
-                } else {
-                    console.warn("Could not find a suitable 'en-GB' voice.");
-                }
-            } catch (error) {
-                console.error("Error loading voices:", error);
-            }
+            if (!window.speechSynthesis) return;
+            const voices = window.speechSynthesis.getVoices();
+            ukFemaleVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('Female') || v.name.includes('Susan'))) || voices.find(v => v.lang === 'en-GB');
         }
 
-        function playSystemTTS(text) {
-            // Check userInteracted flag
-            if (!userInteracted) {
-                console.log("TTS blocked: User has not interacted with the page yet.");
-                return;
-            }
-            try {
-                if (!('speechSynthesis' in window) || !text) return;
-                speechSynthesis.cancel(); // Stop any previous speech
-                const utterance = new SpeechSynthesisUtterance(text);
-                if (ukFemaleVoice) {
-                    utterance.voice = ukFemaleVoice;
-                } else {
-                    // Try to find a fallback voice again if it failed on load
-                    const voices = speechSynthesis.getVoices();
-                    let fallbackVoice = voices.find(v => v.lang === 'en-GB' && v.name.includes('Female')) || voices.find(v => v.lang === 'en-GB');
-                    if (fallbackVoice) utterance.voice = fallbackVoice;
-                }
-                utterance.pitch = 1;
-                utterance.rate = 1;
-                speechSynthesis.speak(utterance);
-            } catch (error) {
-                console.error("Error in playSystemTTS:", error);
-            }
+        function speak(text) {
+            if (!userInteracted || !window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            if (ukFemaleVoice) u.voice = ukFemaleVoice;
+            window.speechSynthesis.speak(u);
         }
 
-        function initTTS() {
-            try {
-                if (!('speechSynthesis' in window)) {
-                    console.error("Browser does not support speech synthesis.");
-                    document.querySelectorAll('.tts-play-btn').forEach(btn => btn.style.display = 'none');
-                    return;
-                }
-                // Try loading voices on init (will be empty, but good to check)
-                loadVoices();
-                if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = loadVoices;
-                }
-                // Manual play button listeners
-                const playButtons = document.querySelectorAll('.tts-play-btn');
-                playButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const blockId = e.currentTarget.dataset.blockId;
-                        const block = scheduleData.find(b => b.id === blockId);
-                        if (block && block.kickoff) {
-                            playSystemTTS(block.kickoff);
-                        }
-                    });
-                });
-            } catch (error) {
-                console.error("Error in initTTS:", error);
-            }
-        }
-
-        // --- Task Completion Logic ---
-        function updateTaskProgress() {
-            try {
-                let completedCount = 0;
-                for (const taskId in taskCompletion) {
-                    if (taskCompletion[taskId]) {
-                        completedCount++;
-                    }
-                }
-                
-                // Progress bar shows progress to the *required* number
-                const progressPercent = Math.min(100, (completedCount / requiredTasks) * 100);
-                // Text shows actual count vs. total
-                incentiveProgressText.textContent = `Tasks Complete: ${completedCount} / ${totalTasks}`;
-                incentiveProgressBar.style.width = `${progressPercent}%`;
-
-                // Check if goal is met
-                if (completedCount >= requiredTasks) {
-                    parentApprovalBtn.disabled = false;
-                    parentApprovalBtn.textContent = "Click for Parental Approval";
-                    parentApprovalBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                    parentApprovalBtn.classList.add('bg-green-600', 'hover:bg-green-700', 'pulse-approval');
-                } else {
-                    parentApprovalBtn.disabled = true;
-                    parentApprovalBtn.textContent = `Awaiting ${requiredTasks} Tasks...`;
-                    parentApprovalBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-                    parentApprovalBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'pulse-approval');
-                }
-            } catch (error) {
-                console.error("Error in updateTaskProgress:", error);
-            }
-        }
-
-        function initCompletion() {
-            try {
-                // Add listeners to all complete buttons
-                document.querySelectorAll('.complete-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const taskId = e.currentTarget.dataset.taskId;
-                        if (taskCompletion[taskId]) return; // Already completed
-
-                        taskCompletion[taskId] = true;
-                        playCompleteSound();
-                        
-                        // Manually update visuals for the clicked card
-                        const card = e.currentTarget.closest('.academic-task');
-                        if (card) {
-                            card.classList.add('task-card-complete');
-                            card.classList.remove('current-block', 'task-card-missed');
-                            e.currentTarget.classList.add('hidden'); // Hide button
-                            const icon = card.querySelector('.check-icon');
-                            if(icon) icon.classList.remove('hidden'); // Show checkmark
-                        }
-
-                        updateTaskProgress();
-                    });
-                });
-
-                // Add listener for parent approval
-                parentApprovalBtn.addEventListener('click', () => {
-                    if (parentApprovalBtn.disabled) return;
-
-                    document.getElementById('incentive-locked').classList.add('hidden');
-                    document.getElementById('incentive-unlocked').classList.remove('hidden');
-                    playCompleteSound(); // Play final confirmation
-                });
-
-                updateTaskProgress(); // Initial call
-            } catch (error) {
-                console.error("Error in initCompletion:", error);
-            }
+        function playChime() {
+            if (chimeSound && chimeSound.loaded) chimeSound.start();
         }
         
-        // --- Smart Scroll Functions ---
-        function scrollToCurrentBlock(blockId) {
-            if (isUserScrolling || !blockId) return;
+        function playComplete() {
+            if (completeSound && completeSound.loaded) completeSound.start();
+        }
 
-            const blockEl = document.getElementById(blockId);
-            if (blockEl) {
-                // Scroll to center the element
-                blockEl.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
+        // --- Logic ---
+        function update() {
+            const today = new Date();
+            const Y = today.getFullYear(), M = today.getMonth(), D = today.getDate();
+            
+            // Helper to set time today
+            const t = (h, m) => new Date(Y, M, D, h, m).getTime();
+
+            const schedule = [
+                { id: 'block-0830', start: t(8,30), end: t(9,0) },
+                { id: 'block-0900', start: t(9,0), end: t(9,50) },
+                { id: 'block-0950', start: t(9,50), end: t(9,55) },
+                { id: 'block-0955', start: t(9,55), end: t(10,45) },
+                { id: 'block-1045', start: t(10,45), end: t(11,15) },
+                { id: 'block-1115', start: t(11,15), end: t(12,5) },
+                { id: 'block-1205', start: t(12,5), end: t(12,10) },
+                { id: 'block-1210', start: t(12,10), end: t(13,0) },
+                { id: 'block-1300', start: t(13,0), end: t(14,0) },
+                { id: 'block-1400', start: t(14,0), end: t(14,15) },
+                { id: 'block-1415', start: t(14,15), end: t(15,5) },
+                { id: 'block-1505', start: t(15,5), end: t(15,10) },
+                { id: 'block-1510', start: t(15,10), end: t(15,28) },
+                { id: 'block-1528', start: t(15,28), end: t(15,30) },
+                { id: 'block-1530', start: t(15,30), end: t(15,45) },
+                { id: 'block-1545', start: t(15,45), end: t(16,0) },
+                { id: 'block-1600', start: t(16,0), end: t(16,30) },
+                { id: 'block-1630', start: t(16,30), end: t(17,30) },
+                { id: 'block-1730', start: t(17,30), end: t(23,59) }
+            ];
+
+            const now = new Date();
+            const nowMs = now.getTime();
+            
+            timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Find Current
+            const currentIdx = schedule.findIndex(s => nowMs >= s.start && nowMs < s.end);
+            const current = currentIdx !== -1 ? schedule[currentIdx] : null;
+            const currentData = current ? scheduleData.find(d => d.id === current.id) : null;
+
+            let newBlockId = current ? current.id : null;
+
+            if (current && currentData) {
+                activityEl.textContent = currentData.title;
+                
+                // Calculations
+                const totalDur = current.end - current.start;
+                const elapsed = nowMs - current.start;
+                const remain = current.end - nowMs;
+                const pct = Math.min(100, (elapsed / totalDur) * 100);
+                
+                // Timer UI
+                const minLeft = Math.floor(remain / 60000);
+                const secLeft = Math.floor((remain % 60000) / 1000);
+                document.getElementById('time-left').textContent = `${minLeft}:${secLeft.toString().padStart(2,'0')}`;
+                progressBarEl.style.width = `${pct}%`;
+                
+                if(currentData.title.includes('Incentive') || currentData.title.includes('All Done')) {
+                    timerDetailsEl.classList.add('hidden');
+                } else {
+                    timerDetailsEl.classList.remove('hidden');
+                }
+
+                // Completion Buttons
+                const taskCard = document.querySelector(`.academic-task[data-task-id="${current.id}"]`);
+                if (taskCard) {
+                    const btn = taskCard.querySelector('.complete-btn');
+                    if (btn) {
+                        // Show only in last 5 mins AND not done
+                        if (remain <= 300000 && !taskCompletion[current.id]) {
+                            btn.classList.remove('hidden');
+                        } else {
+                            btn.classList.add('hidden');
+                        }
+                    }
+                }
+
+                // 5 Minute Warning
+                if (Math.floor(remain / 1000) === 300 && !fiveMinWarningPlayed[current.id]) {
+                    playChime();
+                    setTimeout(() => speak("Five minutes left in this session."), 1500);
+                    fiveMinWarningPlayed[current.id] = true;
+                }
+
+                // Subtle Audio Test
+                if (audioTestArmed) {
+                    const m = now.getMinutes();
+                    if (lastMinute !== -1 && m !== lastMinute) {
+                        playChime();
+                        const tStr = getNaturalTime(now);
+                        setTimeout(() => speak(`The time is ${tStr}. ${minLeft} minutes remaining in ${currentData.title}.`), 1500);
+                        audioTestArmed = false;
+                    }
+                    lastMinute = m;
+                }
+
+            } else {
+                activityEl.textContent = "Waiting...";
+                timerDetailsEl.classList.add('hidden');
+            }
+
+            // Visual Updates
+            schedule.forEach(s => {
+                const el = document.getElementById(s.id);
+                if (!el) return;
+                
+                // Reset styling
+                el.classList.remove('current-block', 'completed-block', 'task-card-missed');
+                
+                // Is Task Complete?
+                let isDone = false;
+                if (el.classList.contains('academic-task')) {
+                    isDone = taskCompletion[el.dataset.taskId];
+                    if (isDone) el.classList.add('task-card-complete');
+                }
+
+                if (s.id === newBlockId) {
+                    if (!isDone) el.classList.add('current-block');
+                } else if (nowMs > s.end) {
+                    if (!isDone && el.classList.contains('academic-task')) {
+                        el.classList.add('task-card-missed');
+                    }
+                    if (!isDone) el.classList.add('completed-block'); // Grey out if not current
+                } else {
+                    // Future
+                    if (isDone) el.classList.add('task-card-complete');
+                }
+            });
+
+            // New Session Alert
+            if (newBlockId !== currentBlockId) {
+                if (currentBlockId !== null && currentData) {
+                    playChime();
+                    scrollToBlock(newBlockId);
+                    setTimeout(() => speak(currentData.kickoff), 1500);
+                }
+                currentBlockId = newBlockId;
+            }
+            
+            // Smart Scroll
+            if (!isUserScrolling && newBlockId) {
+                scrollToBlock(newBlockId);
+            }
+        }
+
+        function runTimer() {
+            // Web Worker for background reliability
+            const blob = new Blob([`setInterval(() => self.postMessage('tick'), 1000)`], {type: 'text/javascript'});
+            const worker = new Worker(URL.createObjectURL(blob));
+            worker.onmessage = update;
+            update();
+        }
+
+        // --- Init Sequence ---
+        function start() {
+            if (userInteracted) return;
+            userInteracted = true;
+            startBtnEl.innerText = "Loading...";
+
+            // 1. Init Tone.js
+            if (typeof Tone !== 'undefined') {
+                Tone.start().then(() => {
+                    // Files assumed in root
+                    chimeSound = new Tone.Player("bingbong-42645.mp3").toDestination();
+                    completeSound = new Tone.Player("string-ending-14456.mp3").toDestination();
                 });
             }
-        }
 
-        function setupScrollListener() {
-            // On any user scroll, set the flag and timeout
-            window.addEventListener('scroll', () => {
-                isUserScrolling = true;
-                // Clear the existing timeout
-                if (scrollTimeout) {
-                    clearTimeout(scrollTimeout);
-                }
-                // Set a new timeout to reset the flag after delay
-                scrollTimeout = setTimeout(() => {
-                    isUserScrolling = false;
-                }, SCROLL_RESET_DELAY);
-            }, { passive: true }); // Use passive for better performance
-        }
-
-        // --- Schedule Start Function ---
-        function startSchedule() {
-            if (userInteracted) return; // Don't run twice
-            userInteracted = true;
-            
-            console.log("Starting Schedule...");
-            startBtnEl.textContent = "Loading...";
-            startBtnEl.disabled = true;
-
-            // 1. Hide overlay, show content
-            startOverlayEl.style.display = 'none';
-            mainContentEl.classList.remove('hidden');
-
-            // 2. Start Tone.js (if it's loaded)
-            if (typeof Tone !== 'undefined') {
-                initSound(); // This will now run the Tone.start() logic
-            } else {
-                // If Tone.js hasn't loaded, wait for it.
-                // The 'onload' attribute on the script tag will call initSound() when ready.
-                console.log("Waiting for Tone.js to load...");
+            // 2. Init Speech
+            if (window.speechSynthesis) {
+                loadVoices();
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
             }
 
-            // 3. Warm up System TTS
-            if ('speechSynthesis' in window) {
-                loadVoices(); // Try to load voices
-                // Speaking a single space is the most reliable cross-browser warmup
-                const warmUpUtterance = new SpeechSynthesisUtterance(' ');
-                speechSynthesis.speak(warmUpUtterance);
-                console.log('Speech synthesis API warmed up.');
-            }
-            
-            // 4. Arm the audio test
+            // 3. UI Transition
+            startOverlayEl.style.opacity = '0';
+            setTimeout(() => {
+                startOverlayEl.style.display = 'none';
+                // No un-blur needed for this clean version
+            }, 500);
+
+            // 4. Logic
             lastMinute = new Date().getMinutes();
             audioTestArmed = true;
-
-            // 5. Start the main timer (Web Worker)
-            runTimer();
             
-            // 6. Init other features
-            initTTS();
-            initCompletion();
-            setupScrollListener(); // Init smart scroll
+            // Scroll listeners
+            window.addEventListener('scroll', () => {
+                isUserScrolling = true;
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => isUserScrolling = false, 60000);
+            }, {passive: true});
+            
+            // TTS buttons
+            document.querySelectorAll('.tts-play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.blockId;
+                    const item = scheduleData.find(x => x.id === id);
+                    if (item) speak(item.kickoff);
+                });
+            });
+
+            // Complete buttons
+            document.querySelectorAll('.complete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.dataset.taskId;
+                    taskCompletion[id] = true;
+                    playComplete();
+                    update();
+                    checkIncentive();
+                });
+            });
+            
+            // Parent Button
+            document.getElementById('parent-approval-btn').addEventListener('click', () => {
+                if (Object.values(taskCompletion).filter(Boolean).length >= requiredTasks) {
+                     document.getElementById('incentive-locked').classList.add('hidden');
+                     document.getElementById('incentive-unlocked').classList.remove('hidden');
+                     playComplete();
+                }
+            });
+
+            runTimer();
+        }
+        
+        function checkIncentive() {
+            const count = Object.values(taskCompletion).filter(Boolean).length;
+            const pct = Math.min(100, (count / requiredTasks) * 100);
+            document.getElementById('task-progress-text').innerText = `Tasks Complete: ${count} / 6`;
+            document.getElementById('task-progress-bar').style.width = `${pct}%`;
+            
+            const pBtn = document.getElementById('parent-approval-btn');
+            if (count >= requiredTasks) {
+                pBtn.disabled = false;
+                pBtn.innerText = "Click for Parental Approval";
+                pBtn.className = "w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg pulse-approval transition-all";
+            }
         }
 
-        // --- Initialization ---
-        // Add the listener to the start button.
-        startBtnEl.addEventListener('click', startSchedule, { once: true });
-        
-        // Note: initSound() is called by the 'onload' attribute on the Tone.js script tag
-        // OR by the startSchedule button, whichever is ready.
-        
-    </script>
+        startBtnEl.addEventListener('click', start);
 
+    </script>
 </body>
 </html>
