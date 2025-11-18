@@ -511,6 +511,8 @@
     
     <!-- Main page script -->
     <script>
+        // Script last updated: 2025-11-18 09:21 AM GMT
+    
         // --- DOM Elements ---
         const timeEl = document.getElementById('current-time');
         const activityEl = document.getElementById('current-activity');
@@ -663,8 +665,25 @@
                     if (audioTestArmed && lastMinute !== -1 && currentMinute !== lastMinute) {
                         console.log("Running subtle audio test...");
                         playChimeSound();
-                        const timeForTTS = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }).replace(":", " ");
-                        const testText = `The time is ${timeForTTS}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
+                        
+                        // --- New Time-for-TTS logic ---
+                        const hour = now.getHours();
+                        const minute = now.getMinutes();
+                        let displayHour = hour % 12;
+                        if (displayHour === 0) displayHour = 12; // 12 for midnight/noon
+                        const ampm = hour >= 12 ? 'P M' : 'A M'; // Spaced for better TTS
+                        
+                        let minuteString;
+                        if (minute === 0) {
+                            minuteString = "o'clock";
+                        } else if (minute < 10) {
+                            minuteString = `o' ${minute}`; // "o' five"
+                        } else {
+                            minuteString = `${minute}`; // "nineteen"
+                        }
+                        // --- End of new logic ---
+                        
+                        const testText = `The time is ${displayHour} ${minuteString} ${ampm}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
                         setTimeout(() => {
                             playSystemTTS(testText);
                         }, 1500);
