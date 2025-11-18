@@ -58,19 +58,6 @@
             line-height: 1.25rem;
         }
 
-        /* Sound banner style */
-        #sound-banner {
-            transition: opacity 0.5s ease;
-            cursor: pointer;
-        }
-        
-        /* Use amber for errors */
-        #sound-banner.error {
-            background-color: #fef3c7; /* amber-100 */
-            color: #92400e; /* amber-800 */
-        }
-
-
         /* Pulsing animation for approval button */
         @keyframes pulse-green {
             0%, 100% {
@@ -94,26 +81,43 @@
             margin-top: 1rem; /* mt-4 */
             border-radius: 0.375rem; /* rounded-md */
         }
+
+        /* Start Button Overlay */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 p-4 md:p-8">
 
-    <!-- Sound On Banner -->
-    <div id="sound-banner" class="fixed top-0 left-0 right-0 bg-yellow-300 text-yellow-900 p-3 text-center z-50">
-        Click anywhere on the page to enable sound alerts and voice prompts.
+    <!-- Start Button Overlay -->
+    <div id="start-overlay">
+        <button id="start-schedule-btn" class="bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg hover:bg-blue-700 transition-all">
+            Start Schedule
+        </button>
     </div>
 
-    <div class="max-w-3xl mx-auto">
+    <div id="main-content" class="max-w-3xl mx-auto hidden">
         
         <!-- Header -->
-        <header class="text-center mb-8 pt-12"> <!-- Added padding-top to avoid banner overlap -->
+        <header class="text-center mb-8">
             <h1 class="text-4xl font-bold text-blue-600">TUESDAY'S PLAN</h1>
             <p class="text-2xl text-gray-600">For Dexter (18th)</p>
         </header>
 
         <!-- Status Section -->
-        <div id="status-section" class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8 text-center sticky top-0 z-10">
-            <div class.grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div id="status-section" class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8 text-center sticky top-4 z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <div class="text-sm font-medium text-blue-200 uppercase">Current Time (UK)</div>
                     <div id="current-time" class="text-3xl font-bold">12:00:00 PM</div>
@@ -502,8 +506,8 @@
         </svg>
     </button>
 
-    <!-- Load Tone.js and run initSound() when it's loaded -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" onload="initSound()" async defer></script>
+    <!-- Load Tone.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" async defer></script>
     
     <!-- Main page script -->
     <script>
@@ -513,14 +517,18 @@
         const timeLeftEl = document.getElementById('time-left');
         const timerDetailsEl = document.getElementById('timer-details');
         const progressBarEl = document.getElementById('progress-bar');
-        const soundBannerEl = document.getElementById('sound-banner');
+        const startOverlayEl = document.getElementById('start-overlay');
+        const startBtnEl = document.getElementById('start-schedule-btn');
+        const mainContentEl = document.getElementById('main-content');
         
         // --- State Variables ---
-        let soundEnabled = false;
+        let toneSoundEnabled = false; // For Tone.js (chimes)
+        let userInteracted = false; // For all audio (chimes + TTS)
         let currentBlockId = null;
         let chimeSound, completeSound; // Will be initialized as Tone.Players
         let ukFemaleVoice = null; // Variable to hold the selected voice
         let fiveMinWarningPlayed = {}; // Object to track warnings for each block
+        let worker; // Web Worker for background timer
 
         // --- Task Completion State ---
         const taskCompletion = {
@@ -636,6 +644,7 @@
                     });
 
                     // --- 5-Minute Warning Logic ---
+                    // Check for exactly 5 minutes (300 seconds)
                     if (totalSecondsLeft === 300 && !fiveMinWarningPlayed[newBlockId]) {
                         console.log("Playing 5-minute warning for", newBlockId);
                         playChimeSound();
@@ -720,17 +729,41 @@
         // --- Timer Runner ---
         function runTimer() {
             try {
+                // --- Web Worker for reliable background timer ---
+                const workerScript = `
+                    setInterval(() => {
+                        self.postMessage('tick');
+                    }, 1000);
+                `;
+                const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(workerBlob);
+                worker = new Worker(workerUrl);
+
+                worker.onmessage = (e) => {
+                    if (e.data === 'tick') {
+                        updateSchedule(); // Run update on every 'tick' from the worker
+                    }
+                };
+                
+                worker.onerror = (e) => {
+                    console.error("Worker error:", e);
+                    // Fallback to setInterval if worker fails
+                    console.log("Worker failed, falling back to setInterval (will pause in background).");
+                    setInterval(updateSchedule, 1000);
+                };
+
                 updateSchedule(); // Run once immediately
-                setInterval(updateSchedule, 1000); // Start the 1-second loop
             } catch (error) {
                 console.error("Failed to start the main timer:", error);
                 activityEl.textContent = "Error loading schedule.";
+                // Fallback to setInterval if worker creation fails
+                setInterval(updateSchedule, 1000);
             }
         }
 
         // --- Sound Logic ---
         function playChimeSound() {
-            if (!soundEnabled || !chimeSound || !chimeSound.loaded) {
+            if (!toneSoundEnabled || !chimeSound || !chimeSound.loaded) {
                 console.log("Chime sound not ready or not enabled.");
                 return;
             }
@@ -738,7 +771,7 @@
         }
         
         function playCompleteSound() {
-             if (!soundEnabled || !completeSound || !completeSound.loaded) {
+             if (!toneSoundEnabled || !completeSound || !completeSound.loaded) {
                 console.log("Complete sound not ready or not enabled.");
                 return;
             }
@@ -746,50 +779,32 @@
         }
 
         function initSound() {
+            // This function is just for the Tone.js *custom* sounds
+            // It runs *after* Tone.js is loaded
             try {
                 if (typeof Tone === 'undefined') {
                     console.error("Tone.js failed to load.");
-                    soundBannerEl.textContent = "Sound alerts failed to load.";
-                    soundBannerEl.classList.add('error'); // Use amber
                     return;
                 }
                 
-                document.body.addEventListener('click', () => {
-                    if (soundEnabled) return; // Only run once
-                    
+                // If user has already clicked "Start", we can init Tone now.
+                if (userInteracted) {
                     Tone.start().then(() => {
-                        console.log('Audio context started.');
+                        console.log('Audio context started for Tone.js.');
+                        toneSoundEnabled = true;
                         
-                        // --- Initialize Tone.Players ---
                         chimeSound = new Tone.Player("bingbong-42645.mp3").toDestination();
                         completeSound = new Tone.Player("string-ending-14456.mp3").toDestination();
 
-                        // Check when sounds are loaded
                         Tone.loaded().then(() => {
                             console.log("All custom sounds loaded.");
-                            soundEnabled = true;
-                            soundBannerEl.style.opacity = '0';
-                            setTimeout(() => soundBannerEl.style.display = 'none', 500);
                         }).catch(e => {
                              console.error("Error loading custom sounds: ", e);
-                             soundBannerEl.textContent = "Error loading sounds. Alerts may not work.";
-                             soundBannerEl.classList.add('error'); // Use amber
                         });
-
                     }).catch(e => {
                         console.error("Error starting Tone.js: ", e);
-                        soundBannerEl.textContent = "Could not start audio. Please click again.";
-                        soundBannerEl.classList.add('error'); // Use amber
                     });
-
-                    // Also warm up the SpeechSynthesis API
-                    if ('speechSynthesis' in window) {
-                        loadVoices(); // Try to load voices on first click
-                        const warmUpUtterance = new SpeechSynthesisUtterance(' ');
-                        speechSynthesis.speak(warmUpUtterance);
-                        console.log('Speech synthesis API warmed up.');
-                    }
-                }, { once: true });
+                }
             } catch (error) {
                 console.error("Error in initSound:", error);
             }
@@ -826,8 +841,9 @@
         }
 
         function playSystemTTS(text) {
-            if (!soundEnabled) {
-                console.log("TTS blocked: Sound not enabled by user click yet.");
+            // Check userInteracted flag
+            if (!userInteracted) {
+                console.log("TTS blocked: User has not interacted with the page yet.");
                 return;
             }
             try {
@@ -857,7 +873,7 @@
                     document.querySelectorAll('.tts-play-btn').forEach(btn => btn.style.display = 'none');
                     return;
                 }
-                // Try loading voices on init
+                // Try loading voices on init (will be empty, but good to check)
                 loadVoices();
                 if (speechSynthesis.onvoiceschanged !== undefined) {
                     speechSynthesis.onvoiceschanged = loadVoices;
@@ -950,14 +966,51 @@
                 console.error("Error in initCompletion:", error);
             }
         }
+        
+        // --- Schedule Start Function ---
+        function startSchedule() {
+            if (userInteracted) return; // Don't run twice
+            userInteracted = true;
+            
+            console.log("Starting Schedule...");
+            startBtnEl.textContent = "Loading...";
+            startBtnEl.disabled = true;
+
+            // 1. Hide overlay, show content
+            startOverlayEl.style.display = 'none';
+            mainContentEl.classList.remove('hidden');
+
+            // 2. Start Tone.js (if it's loaded)
+            if (typeof Tone !== 'undefined') {
+                initSound(); // This will now run the Tone.start() logic
+            } else {
+                // If Tone.js hasn't loaded, wait for it.
+                // The 'onload' attribute on the script tag will call initSound() when ready.
+                console.log("Waiting for Tone.js to load...");
+            }
+
+            // 3. Warm up System TTS
+            if ('speechSynthesis' in window) {
+                loadVoices(); // Try to load voices
+                const warmUpUtterance = new SpeechSynthesisUtterance(' ');
+                speechSynthesis.speak(warmUpUtterance);
+                console.log('Speech synthesis API warmed up.');
+            }
+
+            // 4. Start the main timer (Web Worker)
+            runTimer();
+            
+            // 5. Init other features
+            initTTS();
+            initCompletion();
+        }
 
         // --- Initialization ---
-        // Run the core logic first.
-        runTimer();
-        // Set up listeners and secondary features.
-        initTTS();
-        initCompletion();
-        // initSound() is called by Tone.js's onload, which is fine.
+        // Add the listener to the start button.
+        startBtnEl.addEventListener('click', startSchedule, { once: true });
+        
+        // Note: initSound() is called by the 'onload' attribute on the Tone.js script tag
+        // OR by the startSchedule button, whichever is ready.
         
     </script>
 
