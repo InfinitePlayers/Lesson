@@ -30,6 +30,7 @@
              border-color: #10b981; /* green-500 */
              background-color: #f0fdf4; /* green-50 */
         }
+        /* Use amber for "missed" instead of red */
         .task-card-missed {
             border-color: #f59e0b; /* amber-500 */
             background-color: #fffbeb; /* amber-50 */
@@ -63,6 +64,7 @@
             cursor: pointer;
         }
         
+        /* Use amber for errors */
         #sound-banner.error {
             background-color: #fef3c7; /* amber-100 */
             color: #92400e; /* amber-800 */
@@ -98,7 +100,7 @@
 
     <!-- Sound On Banner -->
     <div id="sound-banner" class="fixed top-0 left-0 right-0 bg-yellow-300 text-yellow-900 p-3 text-center z-50">
-        Click anywhere on the page to enable sound alerts.
+        Click anywhere on the page to enable sound alerts and voice prompts.
     </div>
 
     <div class="max-w-3xl mx-auto">
@@ -111,7 +113,7 @@
 
         <!-- Status Section -->
         <div id="status-section" class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8 text-center sticky top-0 z-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class.grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <div class="text-sm font-medium text-blue-200 uppercase">Current Time (UK)</div>
                     <div id="current-time" class="text-3xl font-bold">12:00:00 PM</div>
@@ -518,6 +520,7 @@
         let currentBlockId = null;
         let chimeSound, completeSound; // Will be initialized as Tone.Players
         let ukFemaleVoice = null; // Variable to hold the selected voice
+        let fiveMinWarningPlayed = {}; // Object to track warnings for each block
 
         // --- Task Completion State ---
         const taskCompletion = {
@@ -529,7 +532,7 @@
             'block-1510': false  // Biology
         };
         const totalTasks = Object.keys(taskCompletion).length;
-        const requiredTasks = 4; // *** NEW: Only 4 tasks required ***
+        const requiredTasks = 4; // *** Only 4 tasks required ***
         const incentiveProgressText = document.getElementById('task-progress-text');
         const incentiveProgressBar = document.getElementById('task-progress-bar');
         const parentApprovalBtn = document.getElementById('parent-approval-btn');
@@ -552,9 +555,9 @@
             { id: 'block-1528', title: 'Coach Prep Time', kickoff: "Coach Prep Time! Just two minutes. Grab a drink and get the Zoom link ready. Session starts at 3:30." },
             { id: 'block-1530', title: 'Coach Zoom Session', kickoff: "Time for your coach session. Focus on the problem-solving skills. You've got this." },
             { id: 'block-1545', title: 'Quick Challenge', kickoff: "Okay, 15-minute wind-down. Go to Google's Quick Draw and have some fun." },
-            { id: 'block-1600', title: 'Free Time / Wind Down', kickoff: "Well done. 30 minutes of free time to relax before your gaming hour." }, // NEW
-            { id: 'block-1630', title: 'Incentive Time!', kickoff: "You've earned it! Your hour of gaming time starts now, until 5:30." }, // NEW TIME/KICKOFF
-            { id: 'block-1730', title: 'All Done!', kickoff: "Day complete. Well done." } // NEW
+            { id: 'block-1600', title: 'Free Time / Wind Down', kickoff: "Well done. 30 minutes of free time to relax before your gaming hour." },
+            { id: 'block-1630', title: 'Incentive Time!', kickoff: "You've earned it! Your hour of gaming time starts now, until 5:30." },
+            { id: 'block-1730', title: 'All Done!', kickoff: "Day complete. Well done." }
         ];
 
         // --- Core Logic: Schedule Update ---
@@ -579,9 +582,9 @@
                     { ...scheduleData[13], start: new Date(today).setHours(15, 28, 0, 0), end: new Date(today).setHours(15, 30, 0, 0) }, // Coach Prep
                     { ...scheduleData[14], start: new Date(today).setHours(15, 30, 0, 0), end: new Date(today).setHours(15, 45, 0, 0) }, // Coach
                     { ...scheduleData[15], start: new Date(today).setHours(15, 45, 0, 0), end: new Date(today).setHours(16, 0, 0, 0) }, // Quick Challenge
-                    { ...scheduleData[16], start: new Date(today).setHours(16, 0, 0, 0), end: new Date(today).setHours(16, 30, 0, 0) }, // NEW: Free Time
-                    { ...scheduleData[17], start: new Date(today).setHours(16, 30, 0, 0), end: new Date(today).setHours(17, 30, 0, 0) }, // NEW: Incentive Time
-                    { ...scheduleData[18], start: new Date(today).setHours(17, 30, 0, 0), end: new Date(today).setHours(23, 59, 59, 0) } // NEW: All Done
+                    { ...scheduleData[16], start: new Date(today).setHours(16, 0, 0, 0), end: new Date(today).setHours(16, 30, 0, 0) }, // Free Time
+                    { ...scheduleData[17], start: new Date(today).setHours(16, 30, 0, 0), end: new Date(today).setHours(17, 30, 0, 0) }, // Incentive Time
+                    { ...scheduleData[18], start: new Date(today).setHours(17, 30, 0, 0), end: new Date(today).setHours(23, 59, 59, 0) } // All Done
                 ];
 
                 const now = new Date();
@@ -618,14 +621,11 @@
                     }
 
                     // --- Task Completion Button Logic ---
-                    // Find all 'academic-task' cards
                     document.querySelectorAll('.academic-task').forEach(card => {
                         const taskId = card.dataset.taskId;
-                        // Check if this card's task is the current block
                         if (currentBlock.id === card.id) {
                             const completeBtn = card.querySelector(`.complete-btn`);
                             if (completeBtn) {
-                                // Show button only in last 5 minutes (300 seconds)
                                 if (totalSecondsLeft <= 300 && !taskCompletion[taskId]) {
                                     completeBtn.classList.remove('hidden');
                                 } else {
@@ -634,6 +634,17 @@
                             }
                         }
                     });
+
+                    // --- 5-Minute Warning Logic ---
+                    if (totalSecondsLeft === 300 && !fiveMinWarningPlayed[newBlockId]) {
+                        console.log("Playing 5-minute warning for", newBlockId);
+                        playChimeSound();
+                        // Delay warning to not overlap with chime
+                        setTimeout(() => {
+                            playSystemTTS("Five minutes left in this session.");
+                        }, 1500); 
+                        fiveMinWarningPlayed[newBlockId] = true;
+                    }
 
                 } else {
                     progressBarEl.style.width = `0%`;
@@ -658,7 +669,6 @@
                     const blockEl = document.getElementById(block.id);
                     if (!blockEl) return;
                     
-                    // Check task completion based on its *data-task-id*
                     let isTaskComplete = false;
                     if (blockEl.classList.contains('academic-task')) {
                          isTaskComplete = taskCompletion[blockEl.dataset.taskId];
@@ -675,9 +685,8 @@
                     if (block.end < nowTime) {
                         blockEl.classList.add('completed-block');
                         blockEl.classList.remove('current-block');
-                        // If time is up and it's an uncompleted academic task, mark as missed
                         if (blockEl.classList.contains('academic-task') && !isTaskComplete) {
-                            blockEl.classList.add('task-card-missed');
+                            blockEl.classList.add('task-card-missed'); // Use amber
                         }
                     } else if (block.id === newBlockId) {
                         blockEl.classList.remove('completed-block', 'task-card-missed');
@@ -687,10 +696,18 @@
                     }
                 });
 
+                // --- New Session Alert Logic ---
                 if (newBlockId !== currentBlockId) {
-                    if (currentBlockId !== null) {
+                    if (currentBlockId !== null && currentBlock) {
                         playChimeSound();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                        
+                        // Play kickoff text after a delay
+                        setTimeout(() => {
+                            if (currentBlock.kickoff) {
+                                playSystemTTS(currentBlock.kickoff);
+                            }
+                        }, 1500); // 1.5 second delay after chime
                     }
                     currentBlockId = newBlockId;
                 }
@@ -733,7 +750,7 @@
                 if (typeof Tone === 'undefined') {
                     console.error("Tone.js failed to load.");
                     soundBannerEl.textContent = "Sound alerts failed to load.";
-                    soundBannerEl.classList.add('error');
+                    soundBannerEl.classList.add('error'); // Use amber
                     return;
                 }
                 
@@ -753,21 +770,21 @@
                             soundEnabled = true;
                             soundBannerEl.style.opacity = '0';
                             setTimeout(() => soundBannerEl.style.display = 'none', 500);
-                            playChimeSound(); // Play a confirmation sound
                         }).catch(e => {
                              console.error("Error loading custom sounds: ", e);
                              soundBannerEl.textContent = "Error loading sounds. Alerts may not work.";
-                             soundBannerEl.classList.add('error');
+                             soundBannerEl.classList.add('error'); // Use amber
                         });
 
                     }).catch(e => {
                         console.error("Error starting Tone.js: ", e);
                         soundBannerEl.textContent = "Could not start audio. Please click again.";
-                        soundBannerEl.classList.add('error');
+                        soundBannerEl.classList.add('error'); // Use amber
                     });
 
                     // Also warm up the SpeechSynthesis API
                     if ('speechSynthesis' in window) {
+                        loadVoices(); // Try to load voices on first click
                         const warmUpUtterance = new SpeechSynthesisUtterance(' ');
                         speechSynthesis.speak(warmUpUtterance);
                         console.log('Speech synthesis API warmed up.');
@@ -809,6 +826,10 @@
         }
 
         function playSystemTTS(text) {
+            if (!soundEnabled) {
+                console.log("TTS blocked: Sound not enabled by user click yet.");
+                return;
+            }
             try {
                 if (!('speechSynthesis' in window) || !text) return;
                 speechSynthesis.cancel(); // Stop any previous speech
@@ -836,10 +857,12 @@
                     document.querySelectorAll('.tts-play-btn').forEach(btn => btn.style.display = 'none');
                     return;
                 }
+                // Try loading voices on init
                 loadVoices();
                 if (speechSynthesis.onvoiceschanged !== undefined) {
                     speechSynthesis.onvoiceschanged = loadVoices;
                 }
+                // Manual play button listeners
                 const playButtons = document.querySelectorAll('.tts-play-btn');
                 playButtons.forEach(button => {
                     button.addEventListener('click', (e) => {
