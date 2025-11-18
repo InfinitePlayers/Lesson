@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dexter's Wednesday Plan</title>
+    <title>Dexter's Wednesday Home Plan</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Canvas Confetti for Rewards -->
@@ -55,12 +55,10 @@
 
         .completed-block {
             background-color: #f3f4f6;
-            /* Use rgba for background to look dim without affecting button clickability/opacity recursively */
             color: #4b5563;
             border-left: 4px solid #10b981; /* Green indicator on left */
         }
         
-        /* Ensure buttons inside completed blocks are fully visible and clickable */
         .completed-block .complete-btn {
             opacity: 1; 
             background-color: white;
@@ -132,8 +130,8 @@
 
     <!-- Start Button Overlay -->
     <div id="start-overlay">
-        <h1 class="text-white text-4xl font-bold mb-2">Ready for Wednesday?</h1>
-        <p class="text-gray-300 mb-8 text-lg">Click start to sync audio and timers</p>
+        <h1 class="text-white text-4xl font-bold mb-2">Wednesday Home School</h1>
+        <p class="text-gray-300 mb-8 text-lg">Click start to load the curriculum</p>
         <button id="start-schedule-btn" class="bg-blue-600 text-white font-bold py-4 px-12 rounded-full text-2xl shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition-all transform">
             Start Schedule
         </button>
@@ -143,7 +141,7 @@
         
         <!-- Header -->
         <header class="text-center mb-8 transition-all duration-300">
-            <h1 class="text-4xl font-bold text-blue-600 uppercase tracking-tight">Wednesday's Plan</h1>
+            <h1 class="text-4xl font-bold text-blue-600 uppercase tracking-tight">Wednesday Home Plan</h1>
             <p id="current-date-display" class="text-xl text-gray-500 font-medium mt-1"></p>
         </header>
 
@@ -178,38 +176,37 @@
             <section id="block-0830" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
-                        <h2 class="text-2xl font-bold text-blue-700">Tutor Time (PSHE)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">Tutor Time (Prep)</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600 transition-colors" data-block-id="block-0830" title="Read instructions">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">8:30 - 9:00</span>
                 </div>
-                <p class="text-gray-600 mb-2">Miss M Bourke (Music Room).</p>
-                <p class="text-gray-600">Get ready for the day. Check MS Teams.</p>
+                <p class="text-gray-600">Get ready for the day. Log into MS Teams to check for any specific announcements.</p>
             </section>
 
-            <!-- Block 2: Integrated Learning (P1) -->
+            <!-- Block 2: Integrated Learning (Computing) -->
             <section id="block-0900" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-0900">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">Integrated Learning (P1)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">Computing: Python</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-0900">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">9:00 - 9:50</span>
                 </div>
-                <p class="text-gray-600 font-semibold mb-2">Mr H Hussain (BG01)</p>
+                <p class="text-gray-600 font-semibold mb-2">Focus: Logic & Coding</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Log in to MS Teams.</li>
-                    <li><b>Task:</b> Complete assigned project work.</li>
+                    <li><b>Start Project:</b> Use the Raspberry Pi Projects site to build a "Text Adventure".</li>
+                    <li><b>Link:</b> <a href="https://projects.raspberrypi.org/en/projects/u-are-the-hero" target="_blank" class="text-blue-600 underline">Raspberry Pi: 'You are the Hero'</a></li>
                 </ul>
                 <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-0900">
-                    <span>Mark Integrated Learning as Complete</span>
+                    <span>Mark Computing as Complete</span>
                 </button>
             </section>
             
@@ -221,17 +218,17 @@
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">9:50 - 9:55</span>
                 </div>
-                <p class="text-gray-600">Quick stretch.</p>
+                <p class="text-gray-600">Quick stretch. Eyes off screen.</p>
             </section>
 
-            <!-- Block 4: Core Skills (P2) - Swapped from Spanish -->
+            <!-- Block 4: Core Skills (English) -->
             <section id="block-0955" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-0955">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">Core Skills (P2)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">English: Gothic Lit</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-0955">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
@@ -240,11 +237,12 @@
                 </div>
                 <p class="text-blue-600 text-sm mb-2 font-bold">REPLACING SPANISH</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check MS Teams:</b> Look for Core Skills tasks.</li>
-                    <li><b>Fallback:</b> <a href="https://www.typingclub.com/" target="_blank" class="text-blue-600 underline hover:text-blue-800">TypingClub</a> (15-20 mins).</li>
+                    <li><b>Topic:</b> Gothic Literature (Setting the scene).</li>
+                    <li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/z6ccwmn" target="_blank" class="text-blue-600 underline">BBC Bitesize: Gothic Literature</a></li>
+                    <li><b>Task:</b> Read the revision guide and take the short test.</li>
                 </ul>
                  <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-0955">
-                    <span>Mark Core Skills as Complete</span>
+                    <span>Mark English as Complete</span>
                 </button>
             </section>
             
@@ -256,27 +254,27 @@
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">10:45 - 11:15</span>
                 </div>
-                <p class="text-gray-600">Proper break. Get a snack.</p>
+                <p class="text-gray-600">Proper break. Get a snack and hydrate.</p>
             </section>
             
-            <!-- Block 6: Maths (P3) -->
+            <!-- Block 6: Maths (Algebra) -->
             <section id="block-1115" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-1115">
                 <div class="flex justify-between items-center mb-2">
                      <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">Maths (P3)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">Maths: Algebra</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-1115">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">11:15 - 12:05</span>
                 </div>
-                <p class="text-gray-600 font-semibold mb-2">Miss E Jenkinson (H102)</p>
+                <p class="text-gray-600 font-semibold mb-2">Focus: Substitution & Logic</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check MS Teams:</b> Check for Maths work.</li>
-                    <li><b>Platform:</b> Likely Sparx Maths or Teams assignment.</li>
+                    <li><b>Primary:</b> Log into <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li>
+                    <li><b>Alternative:</b> <a href="https://corbettmaths.com/contents/" target="_blank" class="text-blue-600 underline">CorbettMaths</a> (Search: Substitution).</li>
                 </ul>
                  <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-1115">
                     <span>Mark Maths as Complete</span>
@@ -294,24 +292,25 @@
                 <p class="text-gray-600">Quick reset.</p>
             </section>
             
-            <!-- Block 8: How Science Works (P4) -->
+            <!-- Block 8: Science (Energy) -->
             <section id="block-1210" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-1210">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">How Science Works (P4)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">Science: Energy</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-1210">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">12:10 - 13:00</span>
                 </div>
-                <p class="text-gray-600 font-semibold mb-2">Miss E McGrath (Lab 2)</p>
+                <p class="text-gray-600 font-semibold mb-2">Focus: Physics (Energy Stores)</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check MS Teams:</b> Science lesson.</li>
-                    <li><b>Goal:</b> Watch video, quiz, worksheet.</li>
+                    <li><b>Lesson:</b> Energy stores and transfers.</li>
+                    <li><b>Link:</b> <a href="https://classroom.thenational.academy/units/energy-80c7" target="_blank" class="text-blue-600 underline">Oak National Academy: Energy</a></li>
+                    <li><b>Task:</b> Watch Lesson 1 and complete the worksheet.</li>
                 </ul>
                  <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-1210">
                     <span>Mark Science as Complete</span>
@@ -339,28 +338,28 @@
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">14:00 - 14:15</span>
                 </div>
-                <p class="text-gray-600 font-semibold mb-2">Miss E McGrath (Lab 2)</p>
-                <p class="text-gray-600">Afternoon registration.</p>
+                <p class="text-gray-600">Afternoon check-in. Prepare for the final two sessions.</p>
             </section>
             
-            <!-- Block 11: Geography -->
+            <!-- Block 11: Geography (Tectonics) -->
             <section id="block-1415" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-1415">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">Geography (P5)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">Geography: Tectonics</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-1415">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
                     </div>
                     <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">14:15 - 15:05</span>
                 </div>
-                <p class="text-gray-600 font-semibold mb-2">Mr J Harte (B102)</p>
+                <p class="text-gray-600 font-semibold mb-2">Focus: Volcanoes & Earthquakes</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Check Portal:</b> Geography lesson.</li>
-                    <li><b>Task:</b> Complete assigned work.</li>
+                    <li><b>Topic:</b> Plate Tectonics.</li>
+                    <li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/z849q6f" target="_blank" class="text-blue-600 underline">BBC Bitesize: Tectonics</a></li>
+                    <li><b>Task:</b> Read about Plate Margins and do the quiz.</li>
                 </ul>
                  <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-1415">
                     <span>Mark Geography as Complete</span>
@@ -378,14 +377,14 @@
                 <p class="text-gray-600">Final quick break.</p>
             </section>
             
-            <!-- Block 13: Core Skills (P6) - Swapped from French -->
+            <!-- Block 13: Core Skills (History) -->
             <section id="block-1510" class="block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 academic-task" data-task-id="block-1510">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center space-x-3">
                         <div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
                             <svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-blue-700">Core Skills (P6)</h2>
+                        <h2 class="text-2xl font-bold text-blue-700">History: The Tudors</h2>
                         <button class="tts-play-btn text-blue-400 hover:text-blue-600" data-block-id="block-1510">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg>
                         </button>
@@ -394,12 +393,12 @@
                 </div>
                 <p class="text-blue-600 text-sm mb-2 font-bold">REPLACING FRENCH</p>
                 <ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600">
-                    <li><b>Task:</b> Catch up on any Core Skills.</li>
-                    <li><b>Alternative:</b> BBC Bitesize or TypingClub.</li>
-                    <li><b>Goal:</b> Finish strong.</li>
+                    <li><b>Topic:</b> Henry VIII and the Reformation.</li>
+                    <li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/zy339j6" target="_blank" class="text-blue-600 underline">BBC Bitesize: The Tudors</a></li>
+                    <li><b>Task:</b> Watch the video clips and complete the 'Revise' section.</li>
                 </ul>
                  <button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2" data-task-id="block-1510">
-                    <span>Mark Core Skills as Complete</span>
+                    <span>Mark History as Complete</span>
                 </button>
             </section>
 
@@ -545,22 +544,21 @@
         const incentiveProgressBar = document.getElementById('task-progress-bar');
         const parentApprovalBtn = document.getElementById('parent-approval-btn');
 
-        // --- Schedule Data (WEDNESDAY) ---
-        // P2 (9:55) and P6 (15:10) are now Core Skills
+        // --- Schedule Data (WEDNESDAY - HOME SCHOOL) ---
         const scheduleData = [
-            { id: 'block-0830', title: 'Tutor Time (PSHE)', kickoff: "Good morning Dexter. It's Wednesday, Tutor Time with Miss Bourke." },
-            { id: 'block-0900', title: 'Integrated Learning (P1)', kickoff: "First lesson: Integrated Learning with Mr Hussain." },
+            { id: 'block-0830', title: 'Tutor Time (Prep)', kickoff: "Good morning Dexter. It's Wednesday. Let's get set up for home learning." },
+            { id: 'block-0900', title: 'Computing: Python (P1)', kickoff: "First lesson: Computing. Let's learn some Python code." },
             { id: 'block-0950', title: 'Short Break', kickoff: "Take a breather. 5 minutes." },
-            { id: 'block-0955', title: 'Core Skills (P2)', kickoff: "Period 2. Core Skills instead of Spanish. Check Teams for your tasks." },
+            { id: 'block-0955', title: 'English: Gothic Lit (P2)', kickoff: "English time. We are looking at Gothic Literature instead of Spanish." },
             { id: 'block-1045', title: 'Morning Break', kickoff: "Morning break. Get a snack." },
-            { id: 'block-1115', title: 'Maths (P3)', kickoff: "Maths time with Miss Jenkinson." },
+            { id: 'block-1115', title: 'Maths: Algebra (P3)', kickoff: "Maths time. Focus on Algebra." },
             { id: 'block-1205', title: 'Short Break', kickoff: "Quick reset." },
-            { id: 'block-1210', title: 'How Science Works (P4)', kickoff: "Science time with Miss McGrath." },
+            { id: 'block-1210', title: 'Science: Energy (P4)', kickoff: "Science time. Energy stores and transfers." },
             { id: 'block-1300', title: 'Lunch & Dog Walk', kickoff: "Lunch time. Take the dog out!" },
-            { id: 'block-1400', title: 'Tutor Time PM', kickoff: "Afternoon check in with Miss McGrath." },
-            { id: 'block-1415', title: 'Geography (P5)', kickoff: "Geography with Mr Harte." },
+            { id: 'block-1400', title: 'Tutor Time PM', kickoff: "Afternoon check in." },
+            { id: 'block-1415', title: 'Geography: Tectonics (P5)', kickoff: "Geography. Volcanoes and Earthquakes." },
             { id: 'block-1505', title: 'Short Break', kickoff: "Last break before the final push." },
-            { id: 'block-1510', title: 'Core Skills (P6)', kickoff: "Final lesson. Core Skills instead of French. Let's finish the day strong." },
+            { id: 'block-1510', title: 'History: The Tudors (P6)', kickoff: "Final lesson. History - The Tudors, instead of French." },
             { id: 'block-1600', title: 'Free Time', kickoff: "School's out. Relax for 30 minutes." },
             { id: 'block-1630', title: 'Incentive Time!', kickoff: "Gaming time unlocked if you finished your tasks." },
             { id: 'block-1730', title: 'All Done!', kickoff: "Day complete." }
