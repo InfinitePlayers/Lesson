@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dexter's Tuesday Plan</title>
-    <!-- Load Tailwind CSS -->
+    <!-- Load Tailwind CSS 18/11 0938-->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tone.js will be loaded at the bottom -->
     <style>
+        /* [FIX]: Moved @import to the top */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
         /* Custom styles */
+        html {
+            scroll-behavior: smooth; /* Enable smooth scrolling */
+        }
         body {
             font-family: 'Inter', sans-serif;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
         .current-block {
             border-width: 4px;
@@ -30,7 +35,7 @@
              border-color: #10b981; /* green-500 */
              background-color: #f0fdf4; /* green-50 */
         }
-        /* Use amber for "missed" instead of red */
+        /* [FIX]: Use amber for "missed" instead of red */
         .task-card-missed {
             border-color: #f59e0b; /* amber-500 */
             background-color: #fffbeb; /* amber-50 */
@@ -511,7 +516,7 @@
     
     <!-- Main page script -->
     <script>
-        // Script last updated: 2025-11-18 09:21 AM GMT
+        // Script last updated: 2025-11-18 09:37 AM GMT
     
         // --- DOM Elements ---
         const timeEl = document.getElementById('current-time');
@@ -533,6 +538,11 @@
         let worker; // Web Worker for background timer
         let lastMinute = -1; // For audio test
         let audioTestArmed = false; // For audio test
+
+        // --- Smart Scroll Logic ---
+        let isUserScrolling = false;
+        let scrollTimeout = null;
+        const SCROLL_RESET_DELAY = 60000; // 1 minute (in ms)
 
         // --- Task Completion State ---
         const taskCompletion = {
@@ -666,24 +676,9 @@
                         console.log("Running subtle audio test...");
                         playChimeSound();
                         
-                        // --- New Time-for-TTS logic ---
-                        const hour = now.getHours();
-                        const minute = now.getMinutes();
-                        let displayHour = hour % 12;
-                        if (displayHour === 0) displayHour = 12; // 12 for midnight/noon
-                        const ampm = hour >= 12 ? 'P M' : 'A M'; // Spaced for better TTS
+                        const timeForTTS = getNaturalTimeForTTS(now);
+                        const testText = `The time is ${timeForTTS}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
                         
-                        let minuteString;
-                        if (minute === 0) {
-                            minuteString = "o'clock";
-                        } else if (minute < 10) {
-                            minuteString = `o' ${minute}`; // "o' five"
-                        } else {
-                            minuteString = `${minute}`; // "nineteen"
-                        }
-                        // --- End of new logic ---
-                        
-                        const testText = `The time is ${displayHour} ${minuteString} ${ampm}, and there are ${minutesLeft} minutes remaining in the ${currentBlock.title} session.`;
                         setTimeout(() => {
                             playSystemTTS(testText);
                         }, 1500);
@@ -746,7 +741,7 @@
                 if (newBlockId !== currentBlockId) {
                     if (currentBlockId !== null && currentBlock) {
                         playChimeSound();
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        scrollToCurrentBlock(newBlockId); // Smart-scroll
                         
                         // Play kickoff text after a delay
                         setTimeout(() => {
@@ -757,6 +752,12 @@
                     }
                     currentBlockId = newBlockId;
                 }
+
+                // --- 1-Minute Idle Scroll Reset ---
+                if (!isUserScrolling && currentBlockId) {
+                    scrollToCurrentBlock(currentBlockId);
+                }
+
             } catch (error) {
                 console.error("Error in updateSchedule:", error);
                 // Don't stop the timer, just log the error
@@ -830,8 +831,9 @@
                         console.log('Audio context started for Tone.js.');
                         toneSoundEnabled = true;
                         
-                        chimeSound = new Tone.Player("bingbong-42645.mp3").toDestination();
-                        completeSound = new Tone.Player("string-ending-14456.mp3").toDestination();
+                        // [FIX] Using the googleusercontent.com URLs provided from your upload
+                        chimeSound = new Tone.Player("http://googleusercontent.com/file_content/1").toDestination();      // bingbong-42645.mp3
+                        completeSound = new Tone.Player("http://googleusercontent.com/file_content/2").toDestination(); // string-ending-14456.mp3
 
                         Tone.loaded().then(() => {
                             console.log("All custom sounds loaded.");
@@ -848,6 +850,26 @@
         }
         
         // --- System TTS Functions ---
+        
+        // New function for natural time
+        function getNaturalTimeForTTS(date) {
+            const hour = date.getHours();
+            const minute = date.getMinutes();
+            let displayHour = hour % 12;
+            if (displayHour === 0) displayHour = 12; // 12 for midnight/noon
+            const ampm = hour >= 12 ? 'P M' : 'A M'; // Spaced for better TTS
+            
+            let minuteString;
+            if (minute === 0) {
+                minuteString = "o'clock";
+            } else if (minute < 10) {
+                minuteString = `o' ${minute}`; // "o' five"
+            } else {
+                minuteString = `${minute}`; // "nineteen"
+            }
+            return `${displayHour} ${minuteString} ${ampm}`;
+        }
+
         function loadVoices() {
             try {
                 if (!('speechSynthesis' in window)) {
@@ -1004,6 +1026,35 @@
             }
         }
         
+        // --- Smart Scroll Functions ---
+        function scrollToCurrentBlock(blockId) {
+            if (isUserScrolling || !blockId) return;
+
+            const blockEl = document.getElementById(blockId);
+            if (blockEl) {
+                // Scroll to center the element
+                blockEl.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        function setupScrollListener() {
+            // On any user scroll, set the flag and timeout
+            window.addEventListener('scroll', () => {
+                isUserScrolling = true;
+                // Clear the existing timeout
+                if (scrollTimeout) {
+                    clearTimeout(scrollTimeout);
+                }
+                // Set a new timeout to reset the flag after delay
+                scrollTimeout = setTimeout(() => {
+                    isUserScrolling = false;
+                }, SCROLL_RESET_DELAY);
+            }, { passive: true }); // Use passive for better performance
+        }
+
         // --- Schedule Start Function ---
         function startSchedule() {
             if (userInteracted) return; // Don't run twice
@@ -1045,6 +1096,7 @@
             // 6. Init other features
             initTTS();
             initCompletion();
+            setupScrollListener(); // Init smart scroll
         }
 
         // --- Initialization ---
