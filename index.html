@@ -50,6 +50,12 @@
         .task-card-missed {
             border-color: #f59e0b; background-color: #fffbeb; border-width: 2px;
         }
+        
+        /* Travel Block Style */
+        .travel-block {
+            border-left: 4px solid #8b5cf6; /* Purple */
+            background-color: #f5f3ff;
+        }
 
         /* Progress Bar */
         .progress-bar-container {
@@ -261,14 +267,14 @@
             4: [
                 { id: 'th-0830', start: [8,30], end: [9,0], title: 'Tutor Time (Prep)', type: 'info', kickoff: "Good morning Dexter. Thursday. Let's check in for the day.", 
                   html: `<p class="text-gray-600">Mr J Kubik (H104). Check MS Teams for notices.</p>` },
-                { id: 'th-0900', start: [9,0], end: [9,50], title: 'Maths (P1)', type: 'academic', kickoff: "Maths first thing. Miss Jenkinson.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Teacher:</b> Miss E Jenkinson (H102).</li><li><b>Task:</b> Check Sparx Maths or Teams for today's work.</li></ul>` },
-                { id: 'th-0950', start: [9,50], end: [9,55], title: 'Short Break', type: 'break', kickoff: "Quick break." },
-                { id: 'th-0955', start: [9,55], end: [10,45], title: 'Computing: Python (P2)', type: 'academic', kickoff: "Integrated Learning time. Let's stick with Python.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Project:</b> Continue your Raspberry Pi Python adventure.</li><li><b>Link:</b> <a href="https://projects.raspberrypi.org/en/projects/u-are-the-hero" target="_blank" class="text-blue-600 underline">Raspberry Pi Projects</a></li></ul>` },
-                { id: 'th-1045', start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', kickoff: "Morning break. Get a snack." },
-                { id: 'th-1115', start: [11,15], end: [12,05], title: 'Core Skills (P3)', type: 'academic', kickoff: "Integrated Learning session 2. Core Skills.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Focus:</b> English or Science catch-up.</li><li><b>Task:</b> Complete any unfinished work from the week or try a BBC Bitesize quiz.</li></ul>` },
+                { id: 'th-0900', start: [9,0], end: [9,30], title: 'Maths (P1)', type: 'academic', kickoff: "Maths first thing. Miss Jenkinson.", 
+                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Teacher:</b> Miss E Jenkinson (H102).</li><li><b>Task:</b> Short session before you leave. Check Sparx.</li></ul>` },
+                { id: 'th-0930', start: [9,30], end: [9,45], title: 'Travel to School', type: 'travel', kickoff: "Time to head out. Leave at 9:30.", html: `<div class="travel-block p-4 rounded-lg"><p class="font-bold text-purple-700">🚗 Leave house now (09:30)</p><p class="text-sm text-purple-600">Aim to arrive by 09:45</p></div>` },
+                { id: 'th-0955', start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', kickoff: "Integrated Learning time. You're in school with Mr Hussain.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Mr H Hussain (BG01)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Location:</b> School (BG01).</li><li><b>Focus:</b> Computing / Project Work.</li></ul>` },
+                { id: 'th-1045', start: [10,45], end: [11,15], title: 'Travel Home / Break', type: 'travel', kickoff: "Session done. Head back home.", html: `<div class="travel-block p-4 rounded-lg"><p class="font-bold text-purple-700">🏠 Return Home</p><p class="text-sm text-purple-600">Grab a snack when you get back.</p></div>` },
+                { id: 'th-1115', start: [11,15], end: [12,05], title: 'Integrated Learning (Home)', type: 'academic', kickoff: "Back at home. Integrated Learning time.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Integrated Learning (P3)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Focus:</b> Core Skills (English/Science catch-up).</li><li><b>Task:</b> Complete any unfinished work from the week.</li></ul>` },
                 { id: 'th-1205', start: [12,5], end: [12,10], title: 'Short Break', type: 'break', kickoff: "Quick reset." },
                 { id: 'th-1210', start: [12,10], end: [13,0], title: 'Design Technology (P4)', type: 'academic', kickoff: "DT time. Let's do a design challenge.", 
                   html: `<p class="text-gray-600 font-semibold mb-2">Mr I Gibb (DT Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Home Challenge:</b> Dyson Foundation Engineering Challenges.</li><li><b>Link:</b> <a href="https://www.jamesdysonfoundation.co.uk/resources/challenge-cards.html" target="_blank" class="text-blue-600 underline">Dyson Challenge Cards</a></li><li><b>Task:</b> Pick one (e.g., Spaghetti Bridges) and try it out!</li></ul>` },
@@ -277,8 +283,8 @@
                 { id: 'th-1415', start: [14,15], end: [15,05], title: 'Music (P5)', type: 'academic', kickoff: "Music time. Let's make some noise (digitally).", 
                   html: `<p class="text-gray-600 font-semibold mb-2">Miss M Bourke (Music Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Activity:</b> Chrome Music Lab.</li><li><b>Link:</b> <a href="https://musiclab.chromeexperiments.com/Song-Maker/" target="_blank" class="text-blue-600 underline">Song Maker Experiment</a></li><li><b>Task:</b> Create a short loop or beat.</li></ul>` },
                 { id: 'th-1505', start: [15,5], end: [15,10], title: 'Short Break', type: 'break', kickoff: "Last break." },
-                { id: 'th-1510', start: [15,10], end: [16,0], title: 'Core Skills (P6)', type: 'academic', kickoff: "Final push. Finish up your work.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Task:</b> Homework catch-up or reading.</li><li><b>Goal:</b> Clear your desk for the evening.</li></ul>` },
+                { id: 'th-1510', start: [15,10], end: [16,0], title: 'Integrated Learning (P6)', type: 'academic', kickoff: "Final push. Finish up your work.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Mr H Hussain (BG01)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Task:</b> Homework catch-up or reading.</li><li><b>Goal:</b> Clear your desk for the evening.</li></ul>` },
                 { id: 'th-1600', start: [16,0], end: [16,30], title: 'Free Time', type: 'break', kickoff: "School's out." },
                 { id: 'th-1630', start: [16,30], end: [17,30], title: 'Incentive Time!', type: 'reward', kickoff: "Gaming time unlocked!" },
                 { id: 'th-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
@@ -334,6 +340,7 @@
                 // Icon based on type
                 let icon = '';
                 if (block.type === 'reward') icon = '<span class="text-3xl">🎮</span>';
+                else if (block.type === 'travel') icon = '<span class="text-3xl">🚗</span>';
                 else if (block.title.includes('Break')) icon = ''; // Simple break
                 else if (isAcademic) {
                     icon = `<div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center"><svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>`;
@@ -344,7 +351,7 @@
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center space-x-3">
                             ${icon}
-                            <h2 class="text-2xl font-bold ${block.type === 'break' ? 'text-teal-600' : 'text-blue-700'}">${block.title}</h2>
+                            <h2 class="text-2xl font-bold ${block.type === 'break' ? 'text-teal-600' : (block.type === 'travel' ? 'text-purple-700' : 'text-blue-700')}">${block.title}</h2>
                             ${block.kickoff ? `<button class="tts-play-btn text-blue-400 hover:text-blue-600 transition-colors" data-block-id="${block.id}"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg></button>` : ''}
                         </div>
                         <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">${formatTime(block.start)} - ${formatTime(block.end)}</span>
