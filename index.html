@@ -141,6 +141,7 @@
                     <option value="auto">Auto-Detect Day</option>
                     <option value="2">Force Tuesday</option>
                     <option value="3">Force Wednesday</option>
+                    <option value="4">Force Thursday</option>
                     <option value="0">Force Weekend</option>
                 </select>
             </div>
@@ -256,6 +257,33 @@
                 { id: 'w-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
             ],
 
+            // THURSDAY
+            4: [
+                { id: 'th-0830', start: [8,30], end: [9,0], title: 'Tutor Time (Prep)', type: 'info', kickoff: "Good morning Dexter. Thursday. Let's check in for the day.", 
+                  html: `<p class="text-gray-600">Mr J Kubik (H104). Check MS Teams for notices.</p>` },
+                { id: 'th-0900', start: [9,0], end: [9,50], title: 'Maths (P1)', type: 'academic', kickoff: "Maths first thing. Miss Jenkinson.", 
+                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Teacher:</b> Miss E Jenkinson (H102).</li><li><b>Task:</b> Check Sparx Maths or Teams for today's work.</li></ul>` },
+                { id: 'th-0950', start: [9,50], end: [9,55], title: 'Short Break', type: 'break', kickoff: "Quick break." },
+                { id: 'th-0955', start: [9,55], end: [10,45], title: 'Computing: Python (P2)', type: 'academic', kickoff: "Integrated Learning time. Let's stick with Python.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Project:</b> Continue your Raspberry Pi Python adventure.</li><li><b>Link:</b> <a href="https://projects.raspberrypi.org/en/projects/u-are-the-hero" target="_blank" class="text-blue-600 underline">Raspberry Pi Projects</a></li></ul>` },
+                { id: 'th-1045', start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', kickoff: "Morning break. Get a snack." },
+                { id: 'th-1115', start: [11,15], end: [12,05], title: 'Core Skills (P3)', type: 'academic', kickoff: "Integrated Learning session 2. Core Skills.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Focus:</b> English or Science catch-up.</li><li><b>Task:</b> Complete any unfinished work from the week or try a BBC Bitesize quiz.</li></ul>` },
+                { id: 'th-1205', start: [12,5], end: [12,10], title: 'Short Break', type: 'break', kickoff: "Quick reset." },
+                { id: 'th-1210', start: [12,10], end: [13,0], title: 'Design Technology (P4)', type: 'academic', kickoff: "DT time. Let's do a design challenge.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Mr I Gibb (DT Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Home Challenge:</b> Dyson Foundation Engineering Challenges.</li><li><b>Link:</b> <a href="https://www.jamesdysonfoundation.co.uk/resources/challenge-cards.html" target="_blank" class="text-blue-600 underline">Dyson Challenge Cards</a></li><li><b>Task:</b> Pick one (e.g., Spaghetti Bridges) and try it out!</li></ul>` },
+                { id: 'th-1300', start: [13,0], end: [14,0], title: 'Lunch & Dog Walk', type: 'break', kickoff: "Lunch time. Fresh air." },
+                { id: 'th-1400', start: [14,0], end: [14,15], title: 'Tutor Time PM', type: 'info', kickoff: "Afternoon check in." },
+                { id: 'th-1415', start: [14,15], end: [15,05], title: 'Music (P5)', type: 'academic', kickoff: "Music time. Let's make some noise (digitally).", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Miss M Bourke (Music Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Activity:</b> Chrome Music Lab.</li><li><b>Link:</b> <a href="https://musiclab.chromeexperiments.com/Song-Maker/" target="_blank" class="text-blue-600 underline">Song Maker Experiment</a></li><li><b>Task:</b> Create a short loop or beat.</li></ul>` },
+                { id: 'th-1505', start: [15,5], end: [15,10], title: 'Short Break', type: 'break', kickoff: "Last break." },
+                { id: 'th-1510', start: [15,10], end: [16,0], title: 'Core Skills (P6)', type: 'academic', kickoff: "Final push. Finish up your work.", 
+                  html: `<p class="text-gray-600 font-semibold mb-2">Replaces: Integrated Learning (Mr H Hussain)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Task:</b> Homework catch-up or reading.</li><li><b>Goal:</b> Clear your desk for the evening.</li></ul>` },
+                { id: 'th-1600', start: [16,0], end: [16,30], title: 'Free Time', type: 'break', kickoff: "School's out." },
+                { id: 'th-1630', start: [16,30], end: [17,30], title: 'Incentive Time!', type: 'reward', kickoff: "Gaming time unlocked!" },
+                { id: 'th-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
+            ],
+
             // DEFAULT (Weekend)
             0: [
                 { id: 'wk-0900', start: [9,0], end: [20,0], title: 'Weekend / Day Off', type: 'info', kickoff: "It's the weekend. Enjoy your time off!", html: "<p>No school schedule today. Have fun!</p>" }
@@ -284,7 +312,7 @@
                 isTomorrow = true;
             }
 
-            // Return Tuesday (2), Wednesday (3), or Default (0)
+            // Return Tuesday (2), Wednesday (3), Thursday (4), or Default (0)
             if (schedules[dayIndex]) return { dayIndex: dayIndex, data: schedules[dayIndex], isTomorrow: isTomorrow };
             return { dayIndex: dayIndex, data: schedules[0], isTomorrow: isTomorrow };
         }
