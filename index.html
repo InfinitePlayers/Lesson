@@ -3,686 +3,522 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dexter's Daily Plan</title>
-    <!-- Load Tailwind CSS -->
+    <title>Dexter's Weekly Plan</title>
+    <!-- Tailwind & Confetti -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Google Fonts -->
+    <!-- Load Lucide Icons (Visuals) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        
-        /* Custom styles */
         html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
         
-        /* Block Styles */
+        /* Visual Cards */
         .block-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-
         .current-block {
-            border-width: 4px;
-            border-color: #3b82f6; 
-            transform: scale(1.02);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            z-index: 10;
-            position: relative;
-        }
-
-        /* Focus Mode */
-        body.focus-mode .block-card:not(.current-block) {
-            opacity: 0.1; filter: blur(2px); pointer-events: none; transform: scale(0.95);
-        }
-        body.focus-mode .current-block {
-            transform: scale(1.05); box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); z-index: 50;
-        }
-        body.focus-mode header, body.focus-mode #status-section { z-index: 51; position: relative; }
-
-        /* Completed State */
-        .completed-block {
-            background-color: #f3f4f6; color: #4b5563; border-left: 4px solid #10b981;
-        }
-        .completed-block .complete-btn {
-            opacity: 1; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .task-card-complete {
-             border-color: #10b981; background-color: #f0fdf4; opacity: 0.8;
-        }
-        .task-card-missed {
-            border-color: #f59e0b; background-color: #fffbeb; border-width: 2px;
+            border-width: 4px; border-color: #3b82f6; transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); z-index: 10; position: relative;
         }
         
-        /* Travel Block Style */
-        .travel-block {
-            border-left: 4px solid #8b5cf6; /* Purple */
-            background-color: #f5f3ff;
-        }
+        /* States */
+        .completed-block { background-color: #f3f4f6; opacity: 0.7; border-left: 4px solid #10b981; filter: grayscale(0.5); }
+        .completed-block .complete-btn { display: none; } 
+        
+        .travel-block { border-left: 4px solid #8b5cf6; background-color: #f5f3ff; }
+        .evening-block { border-left: 4px solid #f59e0b; background-color: #fffbeb; }
+        .device-free-block { border-left: 4px solid #ef4444; background-color: #fef2f2; }
 
         /* Progress Bar */
-        .progress-bar-container {
-            width: 100%; background-color: rgba(0,0,0,0.2); border-radius: 999px; overflow: hidden; height: 1.25rem;
-        }
-        .progress-bar {
-            height: 100%; background-color: #93c5fd; width: 0%; transition: width 1s linear;
-        }
+        .progress-bar { height: 100%; background-color: #93c5fd; width: 0%; transition: width 1s linear; }
 
         /* Animations */
-        @keyframes pulse-green {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
-        }
+        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); } }
         .pulse-approval { animation: pulse-green 2s infinite; }
-        
-        .reminder-box {
-            background-color: #fffbeb; border: 1px solid #fde68a; border-left-width: 4px; border-left-color: #facc15; padding: 0.75rem; margin-top: 1rem; border-radius: 0.375rem;
-        }
-
-        #start-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(17, 24, 39, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(8px);
-        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 p-4 md:p-8 pb-24">
+<body class="bg-gray-50 text-gray-800">
 
-    <!-- Start Button Overlay -->
-    <div id="start-overlay">
-        <h1 class="text-white text-4xl font-bold mb-2" id="welcome-title">Ready for the Day?</h1>
-        <p class="text-gray-300 mb-8 text-lg" id="welcome-subtitle">Click start to sync audio and timers</p>
-        <button id="start-schedule-btn" class="bg-blue-600 text-white font-bold py-4 px-12 rounded-full text-2xl shadow-[0_0_20px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition-all transform">
-            Start Schedule
+    <!-- Start Overlay -->
+    <div id="start-overlay" class="fixed inset-0 bg-slate-900/95 z-50 flex flex-col justify-center items-center text-center p-4">
+        <h1 class="text-white text-5xl font-bold mb-4" id="welcome-title">Dexter's Week</h1>
+        <p class="text-blue-200 mb-8 text-xl">Loading schedule...</p>
+        <button id="start-schedule-btn" class="bg-blue-600 text-white font-bold py-4 px-12 rounded-full text-2xl shadow-[0_0_30px_rgba(37,99,235,0.6)] hover:scale-105 transition-all">
+            Let's Go 🚀
         </button>
     </div>
 
-    <div id="main-content" class="max-w-3xl mx-auto hidden">
+    <!-- Main Layout -->
+    <div id="main-content" class="hidden max-w-7xl mx-auto p-4 md:p-6">
         
         <!-- Header -->
-        <header class="text-center mb-8 transition-all duration-300">
-            <h1 class="text-4xl font-bold text-blue-600 uppercase tracking-tight" id="page-header">Daily Plan</h1>
-            <p id="current-date-display" class="text-xl text-gray-500 font-medium mt-1"></p>
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800" id="page-header">Daily Plan</h1>
+                <p id="current-date-display" class="text-gray-500 font-medium"></p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <div class="text-right">
+                    <div class="text-xs text-gray-400 uppercase font-bold">Current Time</div>
+                    <div id="current-time" class="text-3xl font-bold tabular-nums text-blue-600">--:--</div>
+                </div>
+            </div>
         </header>
 
-        <!-- Status Section -->
-        <div id="status-section" class="bg-blue-600 text-white p-6 rounded-2xl shadow-xl mb-8 text-center sticky top-4 z-20 transition-all duration-300 backdrop-blur-md bg-opacity-95 border border-blue-400/30">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <div class="text-xs font-bold text-blue-200 uppercase tracking-wider">Current Time</div>
-                    <div id="current-time" class="text-4xl font-bold tabular-nums tracking-tight">--:--</div>
+        <!-- Grid Layout: Schedule (Left) + Rules (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- LEFT COLUMN: Schedule & Status -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Status Sticky -->
+                <div class="bg-slate-800 text-white p-6 rounded-2xl shadow-xl sticky top-4 z-20 backdrop-blur-md bg-opacity-95 border border-slate-700">
+                    <div class="flex justify-between items-end mb-4">
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Activity</div>
+                            <div id="current-activity" class="text-2xl font-bold text-blue-300 mt-1">Loading...</div>
+                        </div>
+                    </div>
+                    <!-- Timer -->
+                    <div id="timer-details" class="hidden">
+                        <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-1">
+                            <span>Progress</span>
+                            <span id="time-left">00:00</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="progress-bar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <div class="text-xs font-bold text-blue-200 uppercase tracking-wider">Current Activity</div>
-                    <div id="current-activity" class="text-2xl font-bold leading-tight min-h-[2rem]">Loading...</div>
-                </div>
+
+                <!-- Schedule Feed -->
+                <main id="schedule-container" class="space-y-4 pb-12">
+                    <!-- JS Injects Here -->
+                </main>
             </div>
-            <!-- Time Left -->
-            <div id="timer-details" class="hidden">
-                <div class="flex justify-between text-xs font-bold text-blue-200 uppercase mb-1">
-                    <span>Time Remaining</span>
-                    <span id="time-left">00:00</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
+
+            <!-- RIGHT COLUMN: Rules & Info Sidebar -->
+            <div class="lg:col-span-1">
+                <aside class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-blue-600"></i> 
+                        Expectations
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Gaming Rules -->
+                        <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                            <h3 class="font-bold text-green-800 mb-2 flex items-center gap-2">
+                                <i data-lucide="gamepad-2" class="w-5 h-5"></i> Gaming Hours
+                            </h3>
+                            <div class="text-sm text-green-800 space-y-2">
+                                <div class="flex justify-between bg-white/60 p-2 rounded">
+                                    <span>Went to School:</span>
+                                    <span class="font-bold">16:30 - 17:30</span>
+                                </div>
+                                <div class="flex justify-between bg-white/60 p-2 rounded">
+                                    <span>Did Not Go:</span>
+                                    <span class="font-bold">17:00 - 18:30</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Free -->
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                            <h3 class="font-bold text-red-800 mb-2 flex items-center gap-2">
+                                <i data-lucide="off" class="w-5 h-5"></i> No Devices
+                            </h3>
+                            <div class="text-center bg-white/60 p-2 rounded text-red-700 font-bold text-lg">
+                                18:30 - 19:30
+                            </div>
+                            <p class="text-xs text-red-600 text-center mt-1">No Internet. No Screens.</p>
+                        </div>
+
+                        <!-- Routine Checklist -->
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                                <i data-lucide="list-checks" class="w-5 h-5"></i> Daily Musts
+                            </h3>
+                            <ul class="space-y-2 text-sm text-blue-900">
+                                <li class="flex items-center gap-2">
+                                    <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
+                                    Make Bed (Morning)
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
+                                    Teeth: 20:45 (AM & PM)
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
+                                    Shower (3x / Week)
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
+                                    Exercise = Snacks
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Earning Time -->
+                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                            <h3 class="font-bold text-yellow-800 mb-1 flex items-center gap-2">
+                                <i data-lucide="coins" class="w-5 h-5"></i> Earning Time
+                            </h3>
+                            <p class="text-sm text-yellow-700">19:30 - 20:30<br><span class="text-xs opacity-75">(Discuss w/ Lisa & Ben)</span></p>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
-
-        <!-- Schedule Container (Populated via JS) -->
-        <main id="schedule-container" class="space-y-6">
-            <!-- Blocks render here -->
-        </main>
         
-        <!-- Footer / Reset -->
-        <footer class="mt-12 pb-8 flex flex-col items-center space-y-4">
-            <!-- Audio Controls -->
-            <div class="flex space-x-4 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
-                <button onclick="playTickSound()" class="text-sm text-blue-500 hover:text-blue-700 flex items-center space-x-1" title="Test Click Sound"><span>🔊 Tick</span></button>
-                <span class="text-gray-300">|</span>
-                <button onclick="playChimeSound()" class="text-sm text-blue-500 hover:text-blue-700 flex items-center space-x-1" title="Test Chime Sound"><span>🔔 Chime</span></button>
-                <span class="text-gray-300">|</span>
-                <button onclick="playCompleteSound()" class="text-sm text-green-600 hover:text-green-800 flex items-center space-x-1" title="Test Reward Sound"><span>🎉 Reward</span></button>
-            </div>
-            
-            <div class="flex items-center space-x-4">
-                <button id="reset-day-btn" class="text-xs text-red-400 hover:text-red-600">Reset Progress</button>
-                <span class="text-gray-300">|</span>
-                <select id="day-selector" class="text-xs bg-transparent border border-gray-300 rounded p-1">
+        <!-- Footer Controls -->
+        <footer class="mt-12 pb-8 text-center space-y-4">
+            <div class="inline-flex bg-white p-2 rounded-lg shadow-sm border border-gray-200 gap-4 items-center">
+                <div class="flex gap-2">
+                    <button onclick="playTone('tick')" class="text-xs hover:text-blue-600">🔊 Test</button>
+                </div>
+                <div class="h-4 w-px bg-gray-300"></div>
+                <select id="day-selector" class="text-sm bg-transparent border-none focus:ring-0 text-gray-600 font-medium cursor-pointer">
                     <option value="auto">Auto-Detect Day</option>
-                    <option value="2">Force Tuesday</option>
-                    <option value="3">Force Wednesday</option>
-                    <option value="4">Force Thursday</option>
-                    <option value="0">Force Weekend</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
                 </select>
+                <div class="h-4 w-px bg-gray-300"></div>
+                <button id="reset-day-btn" class="text-xs text-red-400 hover:text-red-600">Reset</button>
             </div>
         </footer>
     </div>
 
-    <!-- Focus Mode Button -->
-    <button id="focus-mode-btn" class="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-700 hover:scale-110 transition-all z-50 group" title="Toggle Focus Mode">
-        <span class="absolute right-14 top-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Focus Mode</span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-    </button>
-
-    <!-- Tone.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js" onload="initSound()" async defer></script>
-    
+    <!-- Logic -->
     <script>
-        // --- CONFIG ---
+        // --- Configuration & State ---
         const TODAY_KEY = new Date().toLocaleDateString('en-GB'); 
-        const STORAGE_KEY = `dexter_plan_${TODAY_KEY}`;
+        const STORAGE_KEY = `dexter_week_v2_${TODAY_KEY}`;
         
-        // --- DOM Elements ---
-        const timeEl = document.getElementById('current-time');
-        const activityEl = document.getElementById('current-activity');
-        const timeLeftEl = document.getElementById('time-left');
-        const timerDetailsEl = document.getElementById('timer-details');
-        const progressBarEl = document.getElementById('progress-bar');
-        const startOverlayEl = document.getElementById('start-overlay');
-        const startBtnEl = document.getElementById('start-schedule-btn');
-        const mainContentEl = document.getElementById('main-content');
-        const containerEl = document.getElementById('schedule-container');
-        const dateDisplayEl = document.getElementById('current-date-display');
-        const welcomeTitleEl = document.getElementById('welcome-title');
-        const pageHeaderEl = document.getElementById('page-header');
-
-        // --- State Variables ---
-        let toneSoundEnabled = false;
-        let userInteracted = false;
-        let currentBlockId = null;
-        let chimeSound, completeSound;
-        let fiveMinWarningPlayed = {};
-        let worker;
-        let isUserScrolling = false;
-        let scrollTimeout = null;
-        let isFocusMode = false;
-        let activeSchedule = []; // Will hold the day's data
-        let isNextDayMode = false;
-
-        // --- Load / Init State ---
         let savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         let taskCompletion = savedState.taskCompletion || {};
-        const requiredTasks = 4;
+        
+        let activeSchedule = [];
+        let toneLoaded = false;
+        let currentBlockId = null;
+        let fiveMinPlayed = {};
 
-        // --- DATABASE OF SCHEDULES ---
-        const schedules = {
-            // TUESDAY
+        // --- Audio Setup (Simple HTML5) ---
+        const sounds = {
+            tick: new Audio("https://infiniteplayers.github.io/Lesson/back-tick-107822.mp3"),
+            chime: new Audio("https://infiniteplayers.github.io/Lesson/bingbong-42645.mp3"),
+            reward: new Audio("https://infiniteplayers.github.io/Lesson/string-ending-14456.mp3")
+        };
+
+        // --- Common Descriptions ---
+        const COMMON_DESC = {
+            core: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Teams:</b> Look for assignments.</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize Year 8</a> (English/Science focus).</li></ul>`,
+            maths: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Teams:</b> Look for class work.</li><li><b>Fallback:</b> <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li></ul>`,
+            general: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Teams:</b> See what the class is doing.</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize</a> (Select Topic).</li></ul>`
+        };
+
+        const EVENING_ROUTINE = [
+            { start: [16,30], end: [17,30], title: 'Gaming Time', type: 'reward', icon: '🎮', html: 'Reward for school attendance.' },
+            { start: [17,30], end: [18,30], title: 'Free Time / Dinner', type: 'break', icon: '🍽️' },
+            { start: [18,30], end: [19,30], title: 'NO DEVICES ZONE', type: 'device-free', icon: '📵', html: '<p class="text-red-600 font-bold">No Internet. No Screens.</p>' },
+            { start: [19,30], end: [20,30], title: 'Earning Time', type: 'info', icon: '💰', html: '<p>Discuss with Lisa & Ben.</p>' },
+            { start: [20,30], end: [20,45], title: 'Snack Time', type: 'break', icon: '🍎', html: '<p>Only if earned by exercise!</p>' },
+            { start: [20,45], end: [21,0], title: 'Teeth & Bed', type: 'info', icon: '🛏️', html: '<p>Phone downstairs. Goodnight.</p>' }
+        ];
+
+        const weekData = {
+            // MONDAY: School -> P1 (09:50) -> Home
+            1: [
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
+                { start: [9,0], end: [9,50], title: 'Chemistry (School)', type: 'academic', icon: '🧪', html: 'Miss C Davidson (Lab 3)' },
+                { start: [9,50], end: [10,0], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School done. Time to head home." },
+                { start: [10,0], end: [10,45], title: 'Drama (Home)', type: 'academic', icon: '🎭', html: COMMON_DESC.general },
+                { start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', icon: '☕' },
+                { start: [11,15], end: [12,05], title: 'Maths (Home)', type: 'academic', icon: '📐', html: COMMON_DESC.maths },
+                { start: [12,10], end: [13,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
+                { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
+                ...EVENING_ROUTINE
+            ],
+
+            // TUESDAY: School -> P2 (10:45) -> Home
             2: [
-                { id: 't-0830', start: [8,30], end: [9,0], title: 'Tutor Time / Prep', type: 'info', kickoff: "Good morning Dexter. Time to start. Check Teams for Maths and Core Skills prep.", 
-                  html: `<p class="text-gray-600 mb-2">Get ready for the day. Check MS Teams.</p><div class="bg-blue-50 p-3 rounded-lg"><p class="font-semibold text-blue-800 text-sm mb-1">PREP CHECKLIST:</p><ul class="list-disc list-inside text-blue-700 text-sm"><li>Maths (Get Sparx Maths login ready)</li><li>Core Skills (Check Teams for tasks)</li></ul></div>` },
-                { id: 't-0900', start: [9,0], end: [9,50], title: 'Maths (P1) - Sparx', type: 'academic', kickoff: "Maths time. Log in to Sparx.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Portal:</b> Log in to <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li><li><b>Task:</b> Complete your assigned homework.</li><li><b>Goal:</b> Finish all tasks at 100%.</li></ul>` },
-                { id: 't-0950', start: [9,50], end: [9,55], title: 'Short Break', type: 'break', kickoff: "Take a breather. 5 minutes." },
-                { id: 't-0955', start: [9,55], end: [10,45], title: 'Core Skills (P2)', type: 'academic', kickoff: "Core Skills. Check Teams or do Typing Club.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check MS Teams:</b> Look for Core Skills tasks.</li><li><b>Fallback:</b> <a href="https://www.typingclub.com/" target="_blank" class="text-blue-600 underline">TypingClub</a> (15-20 mins).</li></ul>` },
-                { id: 't-1045', start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', kickoff: "Morning break. Get a snack." },
-                { id: 't-1115', start: [11,15], end: [12,05], title: 'Core Skills (P3)', type: 'academic', kickoff: "Back to Core Skills. Check Teams.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check MS Teams:</b> Any remaining tasks?</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize KS3</a>.</li></ul>` },
-                { id: 't-1205', start: [12,5], end: [12,10], title: 'Short Break', type: 'break', kickoff: "Quick reset." },
-                { id: 't-1210', start: [12,10], end: [13,0], title: 'Science (P4)', type: 'academic', kickoff: "Science time. Watch the video and do the quiz.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check MS Teams:</b> Today's Science lesson.</li><li><b>Fallback:</b> <a href="https://classroom.thenational.academy/subjects-by-year/year-8/subjects/science" target="_blank" class="text-blue-600 underline">Oak National Academy</a>.</li></ul>` },
-                { id: 't-1300', start: [13,0], end: [14,0], title: 'Lunch & Dog Walk', type: 'break', kickoff: "Lunch time. Take the dog out!" },
-                { id: 't-1400', start: [14,0], end: [14,15], title: 'Tutor Time PM', type: 'info', kickoff: "Afternoon check in. Prep for Geography and Biology.", 
-                  html: `<div class="bg-purple-50 p-3 rounded-lg border border-purple-100"><p class="font-semibold text-purple-800 text-sm mb-1">AFTERNOON PREP:</p><ul class="list-disc list-inside text-purple-700 text-sm"><li>Geography & Biology (Check Teams)</li><li>Coach Call @ 3:30 PM (Find Zoom link)</li></ul></div>` },
-                { id: 't-1415', start: [14,15], end: [15,05], title: 'Geography (P5)', type: 'academic', kickoff: "Geography. Check Teams. Remember coach call is at 3:30.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Portal:</b> Geography lesson/project.</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/subjects/zrw76sg" target="_blank" class="text-blue-600 underline">BBC Bitesize Geography</a>.</li></ul><div class="reminder-box flex items-start space-x-2"><span class="text-xl">🔔</span><p class="font-semibold text-yellow-800 text-sm">REMINDER: Coach session at 3:30 PM (in ~1 hour).</p></div>` },
-                { id: 't-1505', start: [15,5], end: [15,10], title: 'Short Break', type: 'break', kickoff: "Last break." },
-                { id: 't-1510', start: [15,10], end: [15,28], title: 'Biology (P6)', type: 'academic', kickoff: "Biology. Finish this before your coach call.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Portal:</b> Biology lesson.</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/subjects/z4882hv" target="_blank" class="text-blue-600 underline">BBC Bitesize Biology</a>.</li></ul>` },
-                { id: 't-1528', start: [15,28], end: [15,30], title: 'Coach Prep', type: 'special', kickoff: "Coach prep. Get a drink, find the link.", html: `<p>Get ready. Grab a drink. Open Zoom.</p>` },
-                { id: 't-1530', start: [15,30], end: [15,45], title: 'Coach Zoom Session', type: 'special', kickoff: "Coach session. Focus.", html: `<p>Focus on life skills and problem-solving.</p>` },
-                { id: 't-1545', start: [15,45], end: [16,0], title: 'Quick Challenge', type: 'fun', kickoff: "Wind down. Try Google Quick Draw.", html: `<a href="https://quickdraw.withgoogle.com/" target="_blank" class="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-lg hover:bg-orange-200 font-semibold">Play Google Quick Draw</a>` },
-                { id: 't-1600', start: [16,0], end: [16,30], title: 'Free Time', type: 'break', kickoff: "Relax for 30 minutes." },
-                { id: 't-1630', start: [16,30], end: [17,30], title: 'Incentive Time!', type: 'reward', kickoff: "Gaming time unlocked if you finished your tasks." },
-                { id: 't-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Miss M Bourke' },
+                { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
+                { start: [9,55], end: [10,45], title: 'Art (School)', type: 'academic', icon: '🎨', html: 'Mrs K Wilson (Art Room)' },
+                { start: [10,45], end: [10,55], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "Period 2 done. Head home." },
+                { start: [10,55], end: [11,15], title: 'Morning Break', type: 'break', icon: '☕' },
+                { start: [11,15], end: [12,05], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: COMMON_DESC.core },
+                { start: [12,10], end: [13,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
+                { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
+                { start: [14,15], end: [15,05], title: 'PE (Exercise)', type: 'academic', icon: '🏃', html: 'Go for a walk or do a workout.' },
+                { start: [15,10], end: [16,0], title: 'Biology (Home)', type: 'academic', icon: '🧬', html: COMMON_DESC.general },
+                ...EVENING_ROUTINE
             ],
-            
-            // WEDNESDAY
+
+            // WEDNESDAY: School -> P3 (12:05) -> Home
             3: [
-                { id: 'w-0830', start: [8,30], end: [9,0], title: 'Tutor Time (Prep)', type: 'info', kickoff: "Good morning Dexter. It's Wednesday. Home learning setup time.", 
-                  html: `<p class="text-gray-600">Get ready for the day. Log into MS Teams to check for any specific announcements.</p>` },
-                { id: 'w-0900', start: [9,0], end: [9,50], title: 'Computing: Python (P1)', type: 'academic', kickoff: "First lesson: Computing. Let's learn some Python code.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Focus: Logic & Coding</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Start Project:</b> Use the Raspberry Pi Projects site to build a "Text Adventure".</li><li><b>Link:</b> <a href="https://projects.raspberrypi.org/en/projects/u-are-the-hero" target="_blank" class="text-blue-600 underline">Raspberry Pi: 'You are the Hero'</a></li></ul>` },
-                { id: 'w-0950', start: [9,50], end: [9,55], title: 'Short Break', type: 'break', kickoff: "Take a breather." },
-                { id: 'w-0955', start: [9,55], end: [10,45], title: 'English: Gothic Lit (P2)', type: 'academic', kickoff: "English time. Gothic Literature.", 
-                  html: `<p class="text-blue-600 text-sm mb-2 font-bold">REPLACING SPANISH</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Topic:</b> Gothic Literature (Setting the scene).</li><li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/z6ccwmn" target="_blank" class="text-blue-600 underline">BBC Bitesize: Gothic Literature</a></li><li><b>Task:</b> Read the revision guide and take the short test.</li></ul>` },
-                { id: 'w-1045', start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', kickoff: "Morning break. Get a snack." },
-                { id: 'w-1115', start: [11,15], end: [12,05], title: 'Maths: Algebra (P3)', type: 'academic', kickoff: "Maths time. Focus on Algebra.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Focus: Substitution & Logic</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Primary:</b> Log into <a href="https://www.sparxmaths.com/" target="_blank" class="text-blue-600 underline">Sparx Maths</a>.</li><li><b>Alternative:</b> <a href="https://corbettmaths.com/contents/" target="_blank" class="text-blue-600 underline">CorbettMaths</a> (Search: Substitution).</li></ul>` },
-                { id: 'w-1205', start: [12,5], end: [12,10], title: 'Short Break', type: 'break', kickoff: "Quick reset." },
-                { id: 'w-1210', start: [12,10], end: [13,0], title: 'Science: Energy (P4)', type: 'academic', kickoff: "Science time. Energy stores and transfers.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Focus: Physics (Energy Stores)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Lesson:</b> Energy stores and transfers.</li><li><b>Link:</b> <a href="https://classroom.thenational.academy/units/energy-80c7" target="_blank" class="text-blue-600 underline">Oak National Academy: Energy</a></li><li><b>Task:</b> Watch Lesson 1 and complete the worksheet.</li></ul>` },
-                { id: 'w-1300', start: [13,0], end: [14,0], title: 'Lunch & Dog Walk', type: 'break', kickoff: "Lunch time." },
-                { id: 'w-1400', start: [14,0], end: [14,15], title: 'Tutor Time PM', type: 'info', kickoff: "Afternoon check in." },
-                { id: 'w-1415', start: [14,15], end: [15,05], title: 'Geography: Tectonics (P5)', type: 'academic', kickoff: "Geography. Volcanoes and Earthquakes.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Focus: Volcanoes & Earthquakes</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Topic:</b> Plate Tectonics.</li><li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/z849q6f" target="_blank" class="text-blue-600 underline">BBC Bitesize: Tectonics</a></li><li><b>Task:</b> Read about Plate Margins and do the quiz.</li></ul>` },
-                { id: 'w-1505', start: [15,5], end: [15,10], title: 'Short Break', type: 'break', kickoff: "Last break." },
-                { id: 'w-1510', start: [15,10], end: [16,0], title: 'History: The Tudors (P6)', type: 'academic', kickoff: "Final lesson. History - The Tudors.", 
-                  html: `<p class="text-blue-600 text-sm mb-2 font-bold">REPLACING FRENCH</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Topic:</b> Henry VIII and the Reformation.</li><li><b>Link:</b> <a href="https://www.bbc.co.uk/bitesize/topics/zy339j6" target="_blank" class="text-blue-600 underline">BBC Bitesize: The Tudors</a></li><li><b>Task:</b> Watch the video clips and complete the 'Revise' section.</li></ul>` },
-                { id: 'w-1600', start: [16,0], end: [16,30], title: 'Free Time', type: 'break', kickoff: "School's out." },
-                { id: 'w-1630', start: [16,30], end: [17,30], title: 'Incentive Time!', type: 'reward', kickoff: "Gaming time unlocked!" },
-                { id: 'w-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
+                { start: [9,0], end: [9,50], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
+                // REPLACED SPANISH WITH CORE SKILLS
+                { start: [9,55], end: [10,45], title: 'Core Skills (School)', type: 'academic', icon: '📚', html: 'Replaces Spanish. Focus on Maths/English.' },
+                { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
+                { start: [11,15], end: [12,05], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
+                { start: [12,05], end: [12,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "Period 3 done. Head home." },
+                { start: [12,15], end: [13,0], title: 'Science (Home)', type: 'academic', icon: '🔬', html: COMMON_DESC.general },
+                { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
+                { start: [14,15], end: [15,05], title: 'Geography (Home)', type: 'academic', icon: '🌍', html: COMMON_DESC.general },
+                // REPLACED FRENCH WITH CORE SKILLS
+                { start: [15,10], end: [16,0], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing French)` },
+                ...EVENING_ROUTINE
             ],
 
-            // THURSDAY
+            // THURSDAY: School -> Lunch (14:00) -> Home
             4: [
-                { id: 'th-0830', start: [8,30], end: [9,0], title: 'Tutor Time (Prep)', type: 'info', kickoff: "Good morning Dexter. Thursday. Let's check in for the day.", 
-                  html: `<p class="text-gray-600">Mr J Kubik (H104). Check MS Teams for notices.</p>` },
-                { id: 'th-0900', start: [9,0], end: [9,30], title: 'Maths (P1)', type: 'academic', kickoff: "Maths first thing. Miss Jenkinson.", 
-                  html: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Teacher:</b> Miss E Jenkinson (H102).</li><li><b>Task:</b> Short session before you leave. Check Sparx.</li></ul>` },
-                { id: 'th-0930', start: [9,30], end: [9,45], title: 'Travel to School', type: 'travel', kickoff: "Time to head out. Leave at 9:30.", html: `<div class="travel-block p-4 rounded-lg"><p class="font-bold text-purple-700">🚗 Leave house now (09:30)</p><p class="text-sm text-purple-600">Aim to arrive by 09:45</p></div>` },
-                { id: 'th-0955', start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', kickoff: "Integrated Learning time. You're in school with Mr Hussain.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Mr H Hussain (BG01)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Location:</b> School (BG01).</li><li><b>Focus:</b> Computing / Project Work.</li></ul>` },
-                { id: 'th-1045', start: [10,45], end: [11,15], title: 'Travel Home / Break', type: 'travel', kickoff: "Session done. Head back home.", html: `<div class="travel-block p-4 rounded-lg"><p class="font-bold text-purple-700">🏠 Return Home</p><p class="text-sm text-purple-600">Grab a snack when you get back.</p></div>` },
-                { id: 'th-1115', start: [11,15], end: [12,05], title: 'Integrated Learning (Home)', type: 'academic', kickoff: "Back at home. Integrated Learning time.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Integrated Learning (P3)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Focus:</b> Core Skills (English/Science catch-up).</li><li><b>Task:</b> Complete any unfinished work from the week.</li></ul>` },
-                { id: 'th-1205', start: [12,5], end: [12,10], title: 'Short Break', type: 'break', kickoff: "Quick reset." },
-                { id: 'th-1210', start: [12,10], end: [13,0], title: 'Design Technology (P4)', type: 'academic', kickoff: "DT time. Let's do a design challenge.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Mr I Gibb (DT Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Home Challenge:</b> Dyson Foundation Engineering Challenges.</li><li><b>Link:</b> <a href="https://www.jamesdysonfoundation.co.uk/resources/challenge-cards.html" target="_blank" class="text-blue-600 underline">Dyson Challenge Cards</a></li><li><b>Task:</b> Pick one (e.g., Spaghetti Bridges) and try it out!</li></ul>` },
-                { id: 'th-1300', start: [13,0], end: [14,0], title: 'Lunch & Dog Walk', type: 'break', kickoff: "Lunch time. Fresh air." },
-                { id: 'th-1400', start: [14,0], end: [14,15], title: 'Tutor Time PM', type: 'info', kickoff: "Afternoon check in." },
-                { id: 'th-1415', start: [14,15], end: [15,05], title: 'Music (P5)', type: 'academic', kickoff: "Music time. Let's make some noise (digitally).", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Miss M Bourke (Music Room)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Activity:</b> Chrome Music Lab.</li><li><b>Link:</b> <a href="https://musiclab.chromeexperiments.com/Song-Maker/" target="_blank" class="text-blue-600 underline">Song Maker Experiment</a></li><li><b>Task:</b> Create a short loop or beat.</li></ul>` },
-                { id: 'th-1505', start: [15,5], end: [15,10], title: 'Short Break', type: 'break', kickoff: "Last break." },
-                { id: 'th-1510', start: [15,10], end: [16,0], title: 'Integrated Learning (P6)', type: 'academic', kickoff: "Final push. Finish up your work.", 
-                  html: `<p class="text-gray-600 font-semibold mb-2">Mr H Hussain (BG01)</p><ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Task:</b> Homework catch-up or reading.</li><li><b>Goal:</b> Clear your desk for the evening.</li></ul>` },
-                { id: 'th-1600', start: [16,0], end: [16,30], title: 'Free Time', type: 'break', kickoff: "School's out." },
-                { id: 'th-1630', start: [16,30], end: [17,30], title: 'Incentive Time!', type: 'reward', kickoff: "Gaming time unlocked!" },
-                { id: 'th-1730', start: [17,30], end: [23,59], title: 'All Done!', type: 'info', kickoff: "Day complete." }
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
+                { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
+                { start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
+                { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
+                { start: [11,15], end: [12,05], title: 'Integrated Learning (School)', type: 'academic', icon: '💻' },
+                { start: [12,10], end: [13,0], title: 'DT (School)', type: 'academic', icon: '🔨', html: 'Mr I Gibb (DT Room)' },
+                { start: [13,0], end: [14,0], title: 'Lunch (School)', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School day finished. Head home." },
+                { start: [14,15], end: [15,05], title: 'Music (Home)', type: 'academic', icon: '🎵', html: COMMON_DESC.general },
+                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
+                ...EVENING_ROUTINE
             ],
 
-            // DEFAULT (Weekend)
-            0: [
-                { id: 'wk-0900', start: [9,0], end: [20,0], title: 'Weekend / Day Off', type: 'info', kickoff: "It's the weekend. Enjoy your time off!", html: "<p>No school schedule today. Have fun!</p>" }
+            // FRIDAY: School -> Lunch (14:00) -> Home
+            5: [
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
+                { start: [9,0], end: [9,50], title: 'Global Citizenship (School)', type: 'academic', icon: '🌍', html: 'Mrs K Wilson (B201)' },
+                { start: [9,55], end: [10,45], title: 'Physics (School)', type: 'academic', icon: '⚛️', html: 'Miss E McGrath (Lab 3)' },
+                { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
+                { start: [11,15], end: [12,05], title: 'Computer Science (School)', type: 'academic', icon: '💻', html: 'Mr I Gibb (Comp Lab)' },
+                { start: [12,10], end: [13,0], title: 'Geography (School)', type: 'academic', icon: '🌍', html: 'Mr J Harte (B102)' },
+                { start: [13,0], end: [14,0], title: 'Lunch (School)', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School week done! Head home." },
+                // REPLACED SPANISH WITH CORE SKILLS
+                { start: [14,15], end: [15,05], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing Spanish)` },
+                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
+                ...EVENING_ROUTINE
             ]
         };
 
-        // --- Logic ---
+        // --- Logic Engine ---
 
-        function getDaySchedule() {
-            // Check for manual override in dropdown
-            const override = document.getElementById('day-selector').value;
-            if (override !== 'auto') {
-                return { dayIndex: parseInt(override), data: schedules[override] || schedules[0], isTomorrow: false };
-            }
-
-            const now = new Date();
-            let dayIndex = now.getDay();
-            let isTomorrow = false;
-
-            // LOGIC: If it is after 17:30 (5:30 PM), show the next day's schedule
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
+        function getScheduleData() {
+            const selector = document.getElementById('day-selector');
+            let day = selector.value;
             
-            if (currentHour > 17 || (currentHour === 17 && currentMinute >= 30)) {
-                dayIndex = (dayIndex + 1) % 7; // Increment day, wrap Sunday (0)
-                isTomorrow = true;
+            if (day === 'auto') day = new Date().getDay();
+            
+            // Default to weekend view if 0 (Sun) or 6 (Sat)
+            if (!weekData[day]) {
+                return [{ start: [9,0], end: [21,0], title: 'Weekend / Day Off', type: 'info', icon: '🎉', html: 'Enjoy your free time!' }];
             }
-
-            // Return Tuesday (2), Wednesday (3), Thursday (4), or Default (0)
-            if (schedules[dayIndex]) return { dayIndex: dayIndex, data: schedules[dayIndex], isTomorrow: isTomorrow };
-            return { dayIndex: dayIndex, data: schedules[0], isTomorrow: isTomorrow };
+            
+            // Inject IDs dynamically to ensure uniqueness per day
+            return weekData[day].map((block, index) => ({
+                ...block,
+                id: `d${day}-b${index}`
+            }));
         }
 
-        function buildScheduleHTML(scheduleData) {
-            containerEl.innerHTML = ''; // Clear current
-            let taskCount = 0;
-
-            scheduleData.forEach(block => {
-                // Calculate task ID for tracking
-                const isAcademic = block.type === 'academic';
-                if (isAcademic) taskCount++;
-
-                const div = document.createElement('section');
+        function renderSchedule() {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = '';
+            activeSchedule = getScheduleData();
+            
+            activeSchedule.forEach(block => {
+                const div = document.createElement('div');
                 div.id = block.id;
-                div.className = `block-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 ${isAcademic ? 'academic-task' : ''}`;
-                if (isAcademic) div.dataset.taskId = block.id;
+                div.className = `block-card bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden ${block.type}-block`;
+                if (block.type === 'academic') div.dataset.taskId = block.id;
 
-                // Icon based on type
-                let icon = '';
-                if (block.type === 'reward') icon = '<span class="text-3xl">🎮</span>';
-                else if (block.type === 'travel') icon = '<span class="text-3xl">🚗</span>';
-                else if (block.title.includes('Break')) icon = ''; // Simple break
-                else if (isAcademic) {
-                    icon = `<div class="check-circle w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center"><svg class="w-4 h-4 text-white check-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>`;
-                }
-
-                // Inner HTML Construction
-                let innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center space-x-3">
-                            ${icon}
-                            <h2 class="text-2xl font-bold ${block.type === 'break' ? 'text-teal-600' : (block.type === 'travel' ? 'text-purple-700' : 'text-blue-700')}">${block.title}</h2>
-                            ${block.kickoff ? `<button class="tts-play-btn text-blue-400 hover:text-blue-600 transition-colors" data-block-id="${block.id}"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l8.63-5.89a1.5 1.5 0 000-2.538L6.3 2.841z"></path></svg></button>` : ''}
+                // Build HTML
+                let html = `
+                    <div class="flex justify-between items-start mb-2 relative z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl">${block.icon || '📅'}</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800">${block.title}</h3>
+                                <span class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${formatTime(block.start)} - ${formatTime(block.end)}</span>
+                            </div>
                         </div>
-                        <span class="text-lg font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-lg">${formatTime(block.start)} - ${formatTime(block.end)}</span>
+                        ${block.type === 'academic' ? `<div class="check-icon text-green-500 hidden"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>` : ''}
                     </div>
                 `;
-
-                if (block.html) innerHTML += block.html;
-
-                // Special Reward Block Content
-                if (block.type === 'reward') {
-                    innerHTML += `
-                    <div id="incentive-locked" class="bg-white p-6 rounded-xl border border-gray-200 mt-4">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-gray-600 font-medium">Progress to Reward</span>
-                            <span id="task-progress-text" class="font-bold text-indigo-600">0 / 6</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-6 mb-6 overflow-hidden">
-                            <div id="task-progress-bar" class="bg-indigo-500 h-6 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
-                        </div>
-                        <button id="parent-approval-btn" class="w-full bg-gray-300 text-gray-500 font-bold py-4 px-4 rounded-xl transition-all cursor-not-allowed flex items-center justify-center" disabled>
-                            <span class="mr-2">🔒</span> Complete 4 tasks to unlock
-                        </button>
-                    </div>
-                    <div id="incentive-unlocked" class="hidden bg-green-50 p-6 rounded-xl border border-green-200 text-center transform transition-all duration-500 scale-95 mt-4">
-                        <h3 class="text-3xl font-bold text-green-600 mb-2">REWARD UNLOCKED!</h3>
-                        <div class="inline-block p-4 bg-white border-2 border-green-400 rounded-xl shadow-sm">
-                            <strong class="text-green-800 text-xl">Reward:</strong> <span class="text-gray-800 text-lg">1 Hour Gaming Time</span>
-                        </div>
-                    </div>`;
-                } 
-                // Academic Complete Button
-                else if (isAcademic) {
-                    innerHTML += `<button class="complete-btn hidden w-full bg-white border-2 border-green-500 text-green-600 font-bold py-3 px-4 rounded-lg hover:bg-green-500 hover:text-white transition-all flex items-center justify-center space-x-2 mt-4" data-task-id="${block.id}"><span>Mark as Complete</span></button>`;
+                
+                if (block.html) html += `<div class="text-gray-600 text-sm mt-2 pl-10">${block.html}</div>`;
+                
+                if (block.type === 'academic') {
+                    html += `
+                    <button class="complete-btn mt-4 w-full py-2 bg-white border-2 border-green-100 text-green-600 font-bold rounded-lg hover:bg-green-50 hover:border-green-300 transition-all flex justify-center items-center gap-2 hidden">
+                        <span>Mark Complete</span>
+                    </button>`;
                 }
 
-                div.innerHTML = innerHTML;
-                containerEl.appendChild(div);
+                div.innerHTML = html;
+                container.appendChild(div);
             });
             
-            // Re-init listeners for new elements
-            setupCompletion();
-            setupTTSListeners();
+            // Safe icon rendering
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+            bindTaskButtons();
         }
 
+        function updateState() {
+            const now = new Date();
+            const nowTime = now.getTime();
+            
+            // Update Header Date
+            const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('current-date-display').textContent = dateStr;
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
+
+            let activeBlock = null;
+
+            activeSchedule.forEach(block => {
+                const startTime = new Date(now).setHours(block.start[0], block.start[1], 0, 0);
+                const endTime = new Date(now).setHours(block.end[0], block.end[1], 0, 0);
+                const el = document.getElementById(block.id);
+                if (!el) return;
+
+                const isDone = taskCompletion[block.id];
+                const hasStarted = nowTime >= startTime;
+                const hasEnded = nowTime >= endTime;
+
+                // Reset styles
+                el.classList.remove('current-block', 'completed-block', 'task-card-missed', 'opacity-50');
+                
+                if (hasEnded) {
+                    el.classList.add('completed-block');
+                    if (block.type === 'academic' && !isDone) el.classList.add('task-card-missed');
+                } else if (hasStarted) {
+                    activeBlock = block;
+                    el.classList.add('current-block');
+                    
+                    // Calculate Progress
+                    const totalDur = endTime - startTime;
+                    const elapsed = nowTime - startTime;
+                    const pct = Math.min(100, (elapsed / totalDur) * 100);
+                    document.getElementById('progress-bar').style.width = `${pct}%`;
+                    
+                    // Show button if academic and not done
+                    const btn = el.querySelector('.complete-btn');
+                    if (btn && !isDone) btn.classList.remove('hidden');
+                    
+                    // Audio Alerts
+                    const minsLeft = Math.floor((endTime - nowTime) / 60000);
+                    document.getElementById('time-left').textContent = `${minsLeft}m left`;
+                    
+                    if (minsLeft === 5 && !fiveMinPlayed[block.id]) {
+                        playTone('chime');
+                        speak(`5 minutes left for ${block.title}`);
+                        fiveMinPlayed[block.id] = true;
+                    }
+                } else {
+                    // Future block
+                    el.classList.add('opacity-50'); 
+                }
+
+                // Visual check for completed
+                if (isDone) {
+                    el.classList.add('task-card-complete');
+                    el.querySelector('.check-icon')?.classList.remove('hidden');
+                    const btn = el.querySelector('.complete-btn');
+                    if(btn) btn.classList.add('hidden');
+                }
+            });
+
+            // Update Top Sticky
+            const statusEl = document.getElementById('current-activity');
+            const timerDiv = document.getElementById('timer-details');
+            
+            if (activeBlock) {
+                if (currentBlockId !== activeBlock.id) {
+                    playTone('chime');
+                    if(activeBlock.kickoff) setTimeout(() => speak(activeBlock.kickoff), 1000);
+                    currentBlockId = activeBlock.id;
+                    document.getElementById(activeBlock.id).scrollIntoView({behavior: 'smooth', block: 'center'});
+                }
+                statusEl.textContent = activeBlock.title;
+                timerDiv.classList.remove('hidden');
+            } else {
+                statusEl.textContent = now.getHours() < 8 ? "Not Started" : "Free Time / Sleeping";
+                timerDiv.classList.add('hidden');
+            }
+        }
+
+        // --- Helpers ---
         function formatTime(arr) {
             return `${arr[0]}:${arr[1].toString().padStart(2, '0')}`;
         }
 
-        function updateSchedule() {
-            const now = new Date();
-            const nowTime = now.getTime();
-            
-            // Determine base date: Today or Tomorrow?
-            let baseDate = new Date();
-            if (isNextDayMode) {
-                // If logic determined we are looking at tomorrow, 
-                // shift schedule dates +1 day so they appear in future, not past
-                baseDate.setDate(baseDate.getDate() + 1);
-            }
-            
-            const createTime = (h, m) => new Date(baseDate).setHours(h, m, 0, 0);
-
-            // Hydrate times
-            activeSchedule.forEach(block => {
-                block.startTime = createTime(...block.start);
-                block.endTime = createTime(...block.end);
-            });
-
-            timeEl.textContent = now.toTimeString().slice(0, 5);
-
-            // Find current block (relative to real time, likely none if isNextDayMode)
-            // Note: If isNextDayMode is true, baseDate is tomorrow. 
-            // nowTime (today) will be < block.startTime (tomorrow).
-            // So currentBlock will likely be null and state will be "Waiting to start".
-            const currentBlock = activeSchedule.find(block => nowTime >= block.startTime && nowTime < block.endTime);
-            let newBlockId = null;
-
-            if (currentBlock) {
-                newBlockId = currentBlock.id;
-                activityEl.textContent = currentBlock.title;
-                
-                // Timer logic...
-                const timeLeftMs = currentBlock.endTime - nowTime;
-                const minutesLeft = Math.floor(timeLeftMs / 60000);
-                const secondsLeft = Math.floor((timeLeftMs % 60000) / 1000);
-                timeLeftEl.textContent = `${minutesLeft}m ${secondsLeft}s`;
-
-                const totalDur = currentBlock.endTime - currentBlock.startTime;
-                const elapsed = nowTime - currentBlock.startTime;
-                const pct = (elapsed / totalDur) * 100;
-                progressBarEl.style.width = `${pct}%`;
-
-                timerDetailsEl.classList.remove('hidden');
-                if(currentBlock.type === 'reward' || currentBlock.type === 'info') timerDetailsEl.classList.add('hidden');
-
-                if (minutesLeft === 5 && secondsLeft === 0 && !fiveMinWarningPlayed[newBlockId]) {
-                    playChimeSound();
-                    setTimeout(() => playSystemTTS("Five minutes remaining."), 1500);
-                    fiveMinWarningPlayed[newBlockId] = true;
-                }
-            } else {
-                // If we are looking at tomorrow, or start of day
-                if (nowTime < activeSchedule[0].startTime) {
-                    activityEl.textContent = isNextDayMode ? "Ready for Tomorrow" : "Not started yet";
-                    timerDetailsEl.classList.add('hidden');
-                    progressBarEl.style.width = '0%';
-                } else {
-                    activityEl.textContent = "Day Complete";
-                    timerDetailsEl.classList.add('hidden');
-                }
-            }
-
-            // Update Classes & Button Visibility
-            activeSchedule.forEach(block => {
-                const el = document.getElementById(block.id);
-                if(!el) return;
-
-                const isComplete = taskCompletion[block.id] || false;
-                // Has the block started?
-                const hasStarted = nowTime >= block.startTime;
-
-                el.classList.remove('current-block', 'completed-block', 'task-card-missed');
-
-                if (block.id === newBlockId) {
-                    el.classList.add('current-block');
-                } else if (nowTime > block.endTime) {
-                    el.classList.add('completed-block');
-                    if (block.type === 'academic' && !isComplete) {
-                        el.classList.add('task-card-missed');
-                    }
-                }
-
-                // Button Logic: 
-                // Show if (Started OR Complete) - Wait, usually hide if complete?
-                // Actually, if looking at tomorrow (hasStarted is false), hide buttons.
-                const btn = el.querySelector('.complete-btn');
-                if (btn) {
-                    if (hasStarted && !isComplete) btn.classList.remove('hidden');
-                    else btn.classList.add('hidden');
-                }
-
-                // Complete State
-                if (isComplete && block.type === 'academic') {
-                    el.classList.add('task-card-complete');
-                    el.classList.remove('task-card-missed', 'completed-block');
-                    el.querySelector('.check-icon').classList.remove('hidden');
-                    el.querySelector('.check-circle').classList.add('bg-green-500', 'border-transparent');
-                }
-            });
-
-            if (newBlockId !== currentBlockId) {
-                if (currentBlockId !== null && currentBlock) {
-                    playChimeSound();
-                    scrollToCurrentBlock(newBlockId);
-                    if (currentBlock.kickoff) setTimeout(() => playSystemTTS(currentBlock.kickoff), 2000);
-                }
-                currentBlockId = newBlockId;
-            }
-        }
-
-        // --- Audio ---
-        const audioFiles = {
-            chime: new Audio("https://infiniteplayers.github.io/Lesson/bingbong-42645.mp3"),
-            tick: new Audio("https://infiniteplayers.github.io/Lesson/back-tick-107822.mp3"),
-            complete: new Audio("https://infiniteplayers.github.io/Lesson/string-ending-14456.mp3")
-        };
-
-        function playChimeSound() { if(userInteracted) { audioFiles.chime.currentTime = 0; audioFiles.chime.play().catch(e=>console.log(e)); } }
-        function playTickSound() { if(userInteracted) { audioFiles.tick.currentTime = 0; audioFiles.tick.play().catch(e=>console.log(e)); } }
-        function playCompleteSound() { if(userInteracted) { audioFiles.complete.currentTime = 0; audioFiles.complete.play().catch(e=>console.log(e)); } }
-        function initSound() { if (typeof Tone !== 'undefined' && userInteracted) { Tone.start(); toneSoundEnabled = true; } }
-        
-        function playSystemTTS(text) {
-            if (!userInteracted || !('speechSynthesis' in window)) return;
-            speechSynthesis.cancel();
-            const utt = new SpeechSynthesisUtterance(text);
-            const voices = speechSynthesis.getVoices();
-            const preferred = voices.find(v => v.name.includes('Google UK English Female') || v.name.includes('Samantha'));
-            if (preferred) utt.voice = preferred;
-            speechSynthesis.speak(utt);
-        }
-
-        // --- Setup ---
-        function updateTaskUI() {
-            const academicTasks = activeSchedule.filter(b => b.type === 'academic');
-            const total = academicTasks.length;
-            let count = 0;
-            academicTasks.forEach(t => { if(taskCompletion[t.id]) count++; });
-
-            const pct = total === 0 ? 0 : Math.min(100, (count / requiredTasks) * 100);
-            
-            const textEl = document.getElementById('task-progress-text');
-            const barEl = document.getElementById('task-progress-bar');
-            const btnEl = document.getElementById('parent-approval-btn');
-
-            if(textEl) textEl.textContent = `${count} / ${total}`;
-            if(barEl) barEl.style.width = `${pct}%`;
-
-            if (btnEl) {
-                if (count >= requiredTasks) {
-                    btnEl.disabled = false;
-                    btnEl.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-                    btnEl.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600', 'pulse-approval', 'cursor-pointer');
-                    btnEl.innerHTML = `<span>🔓</span> Click to Unlock Reward`;
-                } else {
-                    btnEl.disabled = true;
-                    btnEl.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-                    btnEl.classList.remove('bg-green-500', 'text-white', 'hover:bg-green-600', 'pulse-approval', 'cursor-pointer');
-                    btnEl.innerHTML = `<span class="mr-2">🔒</span> Complete 4 tasks to unlock`;
-                }
-            }
-            saveState();
-        }
-        
-        function saveState() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ taskCompletion }));
-        }
-
-        function updateDateDisplay() {
-            const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            dateDisplayEl.textContent = new Date().toLocaleDateString('en-GB', options);
-        }
-
-        function setupCompletion() {
+        function bindTaskButtons() {
             document.querySelectorAll('.complete-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.taskId;
+                    const id = e.currentTarget.closest('.block-card').id;
                     taskCompletion[id] = true;
-                    playTickSound();
-                    updateSchedule();
-                    updateTaskUI();
-                });
-            });
-
-            const unlockBtn = document.getElementById('parent-approval-btn');
-            if(unlockBtn) {
-                unlockBtn.addEventListener('click', () => {
-                    if (unlockBtn.disabled) return;
-                    document.getElementById('incentive-locked').classList.add('hidden');
-                    document.getElementById('incentive-unlocked').classList.remove('hidden');
-                    document.getElementById('incentive-unlocked').classList.add('scale-100');
-                    playCompleteSound();
-                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#3b82f6', '#f59e0b'] });
-                });
-            }
-            updateTaskUI(); // Init UI
-        }
-
-        function setupTTSListeners() {
-            document.querySelectorAll('.tts-play-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const block = activeSchedule.find(b => b.id === e.currentTarget.dataset.blockId);
-                    if(block) playSystemTTS(block.kickoff);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion}));
+                    
+                    playTone('tick');
+                    confetti({ particleCount: 50, spread: 40, origin: { y: 0.7 } });
+                    updateState();
                 });
             });
         }
 
-        // --- Main Start ---
-        function startSchedule() {
-            userInteracted = true;
-            startOverlayEl.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => startOverlayEl.style.display = 'none', 500);
-            mainContentEl.classList.remove('hidden');
-            initSound();
-
-            // Load Schedule
-            const info = getDaySchedule();
-            activeSchedule = info.data;
-            isNextDayMode = info.isTomorrow;
-            
-            // Set Headers
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            
-            if (isNextDayMode) {
-                welcomeTitleEl.textContent = `Ready for Tomorrow (${days[info.dayIndex]})?`;
-                pageHeaderEl.textContent = `${days[info.dayIndex]}'s Plan (Preview)`;
-            } else {
-                welcomeTitleEl.textContent = `Ready for ${days[info.dayIndex]}?`;
-                pageHeaderEl.textContent = `${days[info.dayIndex]}'s Plan`;
+        function playTone(type) {
+            if(sounds[type]) {
+                sounds[type].currentTime = 0;
+                sounds[type].play().catch(e => console.log("Audio blocked"));
             }
-            
-            buildScheduleHTML(activeSchedule);
-
-            // Start Timer
-            const blob = new Blob([`setInterval(() => postMessage('tick'), 1000)`], {type: 'application/javascript'});
-            worker = new Worker(URL.createObjectURL(blob));
-            worker.onmessage = updateSchedule;
-            
-            updateDateDisplay();
-            updateSchedule();
         }
 
-        startBtnEl.addEventListener('click', startSchedule);
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                const v = speechSynthesis.getVoices().find(v => v.name.includes('Google UK English Female'));
+                if (v) u.voice = v;
+                speechSynthesis.speak(u);
+            }
+        }
 
-        // Manual Day Selector Change
+        // --- Initialization ---
+        document.getElementById('start-schedule-btn').addEventListener('click', () => {
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('main-content').classList.remove('hidden');
+            
+            // Init logic
+            renderSchedule();
+            setInterval(updateState, 1000);
+            updateState();
+            
+            // Enable audio context
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if(AC) new AC().resume();
+        });
+
+        // Day Selector
         document.getElementById('day-selector').addEventListener('change', () => {
-            if(userInteracted) {
-                const info = getDaySchedule();
-                activeSchedule = info.data;
-                isNextDayMode = info.isTomorrow;
-                
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                if (isNextDayMode) {
-                     pageHeaderEl.textContent = `${days[info.dayIndex]}'s Plan (Preview)`;
-                } else {
-                     pageHeaderEl.textContent = `${days[info.dayIndex]}'s Plan`;
-                }
+            renderSchedule();
+            updateState();
+        });
 
-                buildScheduleHTML(activeSchedule);
-                updateSchedule();
+        // Reset
+        document.getElementById('reset-day-btn').addEventListener('click', () => {
+            if(confirm("Reset ticks?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
             }
         });
-
-        // Focus Mode
-        document.getElementById('focus-mode-btn').addEventListener('click', () => {
-            document.body.classList.toggle('focus-mode');
-            if(document.body.classList.contains('focus-mode') && currentBlockId) scrollToCurrentBlock(currentBlockId);
-        });
-
-        function scrollToCurrentBlock(id) {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        document.getElementById('reset-day-btn').addEventListener('click', () => {
-            if(confirm("Reset progress?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
-        });
-        
-        // Init Date
-        updateDateDisplay();
 
     </script>
 </body>
