@@ -28,10 +28,20 @@
         .travel-block { border-left: 4px solid #8b5cf6; background-color: #f5f3ff; }
         .evening-block { border-left: 4px solid #f59e0b; background-color: #fffbeb; }
         .device-free-block { border-left: 4px solid #ef4444; background-color: #fef2f2; }
+        .chill-block { border-left: 4px solid #6366f1; background-color: #eef2ff; }
 
         /* Progress Bar */
         .progress-bar { height: 100%; background-color: #93c5fd; width: 0%; transition: width 1s linear; }
 
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+        
         /* Animations */
         @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); } }
         .pulse-approval { animation: pulse-green 2s infinite; }
@@ -57,12 +67,18 @@
                 <h1 class="text-3xl font-bold text-gray-800" id="page-header">Daily Plan</h1>
                 <p id="current-date-display" class="text-gray-500 font-medium"></p>
             </div>
-            <div class="flex gap-4 mt-4 md:mt-0 items-center">
-                <!-- Rules Button (Visible only on mobile/tablet where sidebar drops down) -->
-                <button id="rules-btn" class="lg:hidden bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-200 transition-colors flex items-center gap-2">
-                    <i data-lucide="info" class="w-4 h-4"></i> Rules
-                </button>
-                
+            
+            <div class="flex flex-col items-end gap-2 mt-4 md:mt-0">
+                <!-- School Toggle -->
+                <div class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+                    <span class="text-sm font-bold text-blue-800">Did you go to school?</span>
+                    <label for="school-toggle" class="flex items-center cursor-pointer relative">
+                        <input type="checkbox" id="school-toggle" class="sr-only" checked>
+                        <div class="w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg transition ease-in-out duration-200"></div>
+                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ease-in-out duration-200 transform translate-x-0"></div>
+                    </label>
+                </div>
+
                 <div class="text-right">
                     <div class="text-xs text-gray-400 uppercase font-bold">Current Time</div>
                     <div id="current-time" class="text-3xl font-bold tabular-nums text-blue-600">--:--</div>
@@ -119,25 +135,38 @@
                             </h3>
                             <div class="text-sm text-green-800 space-y-2">
                                 <div class="flex justify-between bg-white/60 p-2 rounded">
-                                    <span>Went to School:</span>
-                                    <span class="font-bold">16:30 - 17:30</span>
+                                    <span>School Bonus:</span>
+                                    <span class="font-bold">16:30 Start</span>
                                 </div>
                                 <div class="flex justify-between bg-white/60 p-2 rounded">
-                                    <span>Did Not Go:</span>
-                                    <span class="font-bold">17:00 - 18:30</span>
+                                    <span>Standard:</span>
+                                    <span class="font-bold">17:00 Start</span>
                                 </div>
+                                <p class="text-xs text-center mt-2 opacity-75">Ends at 18:30 sharp.</p>
                             </div>
                         </div>
 
                         <!-- Device Free -->
                         <div class="bg-red-50 p-4 rounded-xl border border-red-100">
                             <h3 class="font-bold text-red-800 mb-2 flex items-center gap-2">
-                                <i data-lucide="off" class="w-5 h-5"></i> No Devices
+                                <i data-lucide="off" class="w-5 h-5"></i> Device Free
                             </h3>
                             <div class="text-center bg-white/60 p-2 rounded text-red-700 font-bold text-lg">
                                 18:30 - 19:30
                             </div>
-                            <p class="text-xs text-red-600 text-center mt-1">No Internet. No Screens.</p>
+                            <ul class="text-xs text-red-700 mt-2 list-disc list-inside">
+                                <li>Laptop on charge</li>
+                                <li>Clothes ready</li>
+                                <li>Help with table</li>
+                            </ul>
+                        </div>
+
+                        <!-- Snack Rules -->
+                        <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                            <h3 class="font-bold text-orange-800 mb-1 flex items-center gap-2">
+                                <i data-lucide="cookie" class="w-5 h-5"></i> Snack Rule
+                            </h3>
+                            <p class="text-sm text-orange-700">Sugary snacks? You need to do some exercise first!</p>
                         </div>
 
                         <!-- Routine Checklist -->
@@ -152,25 +181,13 @@
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
-                                    Teeth: 20:45 (AM & PM)
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
                                     Shower (3x / Week)
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <i data-lucide="check" class="w-4 h-4 text-blue-500"></i>
-                                    Exercise = Snacks
+                                    <strong>Teeth: 20:45</strong>
                                 </li>
                             </ul>
-                        </div>
-                        
-                        <!-- Earning Time -->
-                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                            <h3 class="font-bold text-yellow-800 mb-1 flex items-center gap-2">
-                                <i data-lucide="coins" class="w-5 h-5"></i> Earning Time
-                            </h3>
-                            <p class="text-sm text-yellow-700">19:30 - 20:30<br><span class="text-xs opacity-75">(Discuss w/ Lisa & Ben)</span></p>
                         </div>
                     </div>
                 </aside>
@@ -202,15 +219,16 @@
     <script>
         // --- Configuration & State ---
         const TODAY_KEY = new Date().toLocaleDateString('en-GB'); 
-        const STORAGE_KEY = `dexter_week_v2_${TODAY_KEY}`;
+        const STORAGE_KEY = `dexter_week_v3_${TODAY_KEY}`;
         
         let savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         let taskCompletion = savedState.taskCompletion || {};
+        let wentToSchool = savedState.wentToSchool !== undefined ? savedState.wentToSchool : true; // Default true
         
         let activeSchedule = [];
-        let toneLoaded = false;
         let currentBlockId = null;
         let fiveMinPlayed = {};
+        let deviceFreeWarningPlayed = false;
 
         // --- Audio Setup (Simple HTML5) ---
         const sounds = {
@@ -226,18 +244,41 @@
             general: `<ul class="list-decimal list-inside space-y-2 mb-4 text-gray-600"><li><b>Check Teams:</b> See what the class is doing.</li><li><b>Fallback:</b> <a href="https://www.bbc.co.uk/bitesize/levels/z4l9kqt" target="_blank" class="text-blue-600 underline">BBC Bitesize</a> (Select Topic).</li></ul>`
         };
 
-        const EVENING_ROUTINE = [
-            { start: [16,30], end: [17,30], title: 'Gaming Time', type: 'reward', icon: '🎮', html: 'Reward for school attendance.' },
-            { start: [17,30], end: [18,30], title: 'Free Time / Dinner', type: 'break', icon: '🍽️' },
-            { start: [18,30], end: [19,30], title: 'NO DEVICES ZONE', type: 'device-free', icon: '📵', html: '<p class="text-red-600 font-bold">No Internet. No Screens.</p>' },
-            { start: [19,30], end: [20,30], title: 'Earning Time', type: 'info', icon: '💰', html: '<p>Discuss with Lisa & Ben.</p>' },
-            { start: [20,30], end: [20,45], title: 'Snack Time', type: 'break', icon: '🍎', html: '<p>Only if earned by exercise!</p>' },
-            { start: [20,45], end: [21,0], title: 'Teeth & Bed', type: 'info', icon: '🛏️', html: '<p>Phone downstairs. Goodnight.</p>' }
-        ];
+        // --- Dynamic Schedule Builder ---
+        function getEveningRoutine(schoolBonus) {
+            const routine = [];
+            
+            // 1. Gaming Blocks
+            if (schoolBonus) {
+                routine.push({ start: [16,30], end: [17,0], title: 'BONUS Gaming (School)', type: 'reward', icon: '🎉', html: 'Extra 30 mins for going to school!' });
+                routine.push({ start: [17,0], end: [18,30], title: 'Gaming / Free Time', type: 'reward', icon: '🎮', html: 'Standard gaming time.' });
+            } else {
+                routine.push({ start: [17,0], end: [18,30], title: 'Gaming / Free Time', type: 'break', icon: '🎮', html: 'Standard gaming time.' });
+            }
+
+            // 2. Device Free
+            routine.push({ 
+                start: [18,30], end: [19,30], title: 'DEVICE FREE ZONE', type: 'device-free', icon: '📵', 
+                html: '<ul class="list-disc list-inside text-red-700 font-medium"><li>Put devices on charge</li><li>Get clothes ready for tomorrow</li><li>Help set the table</li></ul>' 
+            });
+
+            // 3. Earn Device Time
+            routine.push({ start: [19,30], end: [20,30], title: 'Earn Device Time', type: 'info', icon: '💰', html: '<p>Discuss with Lisa & Ben to earn screen time.</p>' });
+
+            // 4. Chill Time (includes teeth)
+            routine.push({ 
+                start: [20,30], end: [21,30], title: 'Chill Time', type: 'chill', icon: '🧘', 
+                html: '<p>TV, Lego, Relax.</p><div class="mt-2 bg-white p-2 rounded border border-blue-200 text-blue-800 font-bold">🦷 20:45: Teeth Cleaning!</div>' 
+            });
+
+            // 5. Bed
+            routine.push({ start: [21,30], end: [22,0], title: 'Settle & Bedtime', type: 'info', icon: '🛏️', html: '<p>Phone downstairs. Goodnight.</p>' });
+
+            return routine;
+        }
 
         const weekData = {
-            // MONDAY: School -> P1 (09:50) -> Home
-            1: [
+            1: [ // Monday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
                 { start: [9,0], end: [9,50], title: 'Chemistry (School)', type: 'academic', icon: '🧪', html: 'Miss C Davidson (Lab 3)' },
                 { start: [9,50], end: [10,0], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School done. Time to head home." },
@@ -246,12 +287,9 @@
                 { start: [11,15], end: [12,05], title: 'Maths (Home)', type: 'academic', icon: '📐', html: COMMON_DESC.maths },
                 { start: [12,10], end: [13,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
                 { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
-                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
-                ...EVENING_ROUTINE
+                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' }
             ],
-
-            // TUESDAY: School -> P2 (10:45) -> Home
-            2: [
+            2: [ // Tuesday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Miss M Bourke' },
                 { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
                 { start: [9,55], end: [10,45], title: 'Art (School)', type: 'academic', icon: '🎨', html: 'Mrs K Wilson (Art Room)' },
@@ -262,16 +300,12 @@
                 { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
                 { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
                 { start: [14,15], end: [15,05], title: 'PE (Exercise)', type: 'academic', icon: '🏃', html: 'Go for a walk or do a workout.' },
-                { start: [15,10], end: [16,0], title: 'Biology (Home)', type: 'academic', icon: '🧬', html: COMMON_DESC.general },
-                ...EVENING_ROUTINE
+                { start: [15,10], end: [16,0], title: 'Biology (Home)', type: 'academic', icon: '🧬', html: COMMON_DESC.general }
             ],
-
-            // WEDNESDAY: School -> P3 (12:05) -> Home
-            3: [
+            3: [ // Wednesday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
                 { start: [9,0], end: [9,50], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
-                // REPLACED SPANISH WITH CORE SKILLS
-                { start: [9,55], end: [10,45], title: 'Core Skills (School)', type: 'academic', icon: '📚', html: 'Replaces Spanish. Focus on Maths/English.' },
+                { start: [9,55], end: [10,45], title: 'Core Skills (School)', type: 'academic', icon: '📚', html: 'Replaces Spanish.' },
                 { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
                 { start: [11,15], end: [12,05], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
                 { start: [12,05], end: [12,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "Period 3 done. Head home." },
@@ -279,28 +313,22 @@
                 { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
                 { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
                 { start: [14,15], end: [15,05], title: 'Geography (Home)', type: 'academic', icon: '🌍', html: COMMON_DESC.general },
-                // REPLACED FRENCH WITH CORE SKILLS
-                { start: [15,10], end: [16,0], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing French)` },
-                ...EVENING_ROUTINE
+                { start: [15,10], end: [16,0], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing French)` }
             ],
-
-            // THURSDAY: School -> Lunch (14:00) -> Home
-            4: [
+            4: [ // Thursday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
-                { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
+                { start: [9,0], end: [9,30], title: 'Maths (P1)', type: 'academic', icon: '📐', html: '<p>Short session before leaving.</p>' },
+                { start: [9,30], end: [9,45], title: 'Travel to School', type: 'travel', icon: '🚗' },
                 { start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
-                { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
-                { start: [11,15], end: [12,05], title: 'Integrated Learning (School)', type: 'academic', icon: '💻' },
-                { start: [12,10], end: [13,0], title: 'DT (School)', type: 'academic', icon: '🔨', html: 'Mr I Gibb (DT Room)' },
-                { start: [13,0], end: [14,0], title: 'Lunch (School)', type: 'break', icon: '🥪' },
-                { start: [14,0], end: [14,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School day finished. Head home." },
-                { start: [14,15], end: [15,05], title: 'Music (Home)', type: 'academic', icon: '🎵', html: COMMON_DESC.general },
-                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
-                ...EVENING_ROUTINE
+                { start: [10,45], end: [11,15], title: 'Travel Home / Break', type: 'travel', icon: '🚗' },
+                { start: [11,15], end: [12,05], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻' },
+                { start: [12,10], end: [13,0], title: 'DT (Home Challenge)', type: 'academic', icon: '🔨', html: 'Dyson Foundation Cards.' },
+                { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
+                { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' },
+                { start: [14,15], end: [15,05], title: 'Music (Home)', type: 'academic', icon: '🎵', html: 'Chrome Music Lab.' },
+                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻' }
             ],
-
-            // FRIDAY: School -> Lunch (14:00) -> Home
-            5: [
+            5: [ // Friday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
                 { start: [9,0], end: [9,50], title: 'Global Citizenship (School)', type: 'academic', icon: '🌍', html: 'Mrs K Wilson (B201)' },
                 { start: [9,55], end: [10,45], title: 'Physics (School)', type: 'academic', icon: '⚛️', html: 'Miss E McGrath (Lab 3)' },
@@ -309,10 +337,8 @@
                 { start: [12,10], end: [13,0], title: 'Geography (School)', type: 'academic', icon: '🌍', html: 'Mr J Harte (B102)' },
                 { start: [13,0], end: [14,0], title: 'Lunch (School)', type: 'break', icon: '🥪' },
                 { start: [14,0], end: [14,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School week done! Head home." },
-                // REPLACED SPANISH WITH CORE SKILLS
                 { start: [14,15], end: [15,05], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing Spanish)` },
-                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
-                ...EVENING_ROUTINE
+                { start: [15,10], end: [16,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general }
             ]
         };
 
@@ -321,16 +347,16 @@
         function getScheduleData() {
             const selector = document.getElementById('day-selector');
             let day = selector.value;
-            
             if (day === 'auto') day = new Date().getDay();
             
-            // Default to weekend view if 0 (Sun) or 6 (Sat)
-            if (!weekData[day]) {
-                return [{ start: [9,0], end: [21,0], title: 'Weekend / Day Off', type: 'info', icon: '🎉', html: 'Enjoy your free time!' }];
-            }
+            if (!weekData[day]) return []; // Handle weekends manually if needed
             
-            // Inject IDs dynamically to ensure uniqueness per day
-            return weekData[day].map((block, index) => ({
+            // Merge Day Schedule with Evening Routine
+            const daySchedule = [...weekData[day]];
+            const evening = getEveningRoutine(wentToSchool);
+            
+            // Combine and inject IDs
+            return [...daySchedule, ...evening].map((block, index) => ({
                 ...block,
                 id: `d${day}-b${index}`
             }));
@@ -341,13 +367,17 @@
             container.innerHTML = '';
             activeSchedule = getScheduleData();
             
+            if (activeSchedule.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-gray-500">Weekend Mode! Enjoy your free time.</div>`;
+                return;
+            }
+
             activeSchedule.forEach(block => {
                 const div = document.createElement('div');
                 div.id = block.id;
                 div.className = `block-card bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden ${block.type}-block`;
                 if (block.type === 'academic') div.dataset.taskId = block.id;
 
-                // Build HTML
                 let html = `
                     <div class="flex justify-between items-start mb-2 relative z-10">
                         <div class="flex items-center gap-3">
@@ -374,7 +404,6 @@
                 container.appendChild(div);
             });
             
-            // Re-init icons safely
             if(typeof lucide !== 'undefined') lucide.createIcons();
             bindTaskButtons();
         }
@@ -382,11 +411,19 @@
         function updateState() {
             const now = new Date();
             const nowTime = now.getTime();
+            const h = now.getHours();
+            const m = now.getMinutes();
             
-            // Update Header Date
-            const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-            document.getElementById('current-date-display').textContent = dateStr;
+            // Date Header
+            document.getElementById('current-date-display').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
             document.getElementById('current-time').textContent = now.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
+
+            // 18:25 Warning Logic (Device Free)
+            if (h === 18 && m === 25 && !deviceFreeWarningPlayed) {
+                playTone('chime');
+                speak("Five minutes until device free time. Please wind down.");
+                deviceFreeWarningPlayed = true;
+            }
 
             let activeBlock = null;
 
@@ -400,7 +437,6 @@
                 const hasStarted = nowTime >= startTime;
                 const hasEnded = nowTime >= endTime;
 
-                // Reset styles
                 el.classList.remove('current-block', 'completed-block', 'task-card-missed', 'opacity-50');
                 
                 if (hasEnded) {
@@ -410,41 +446,33 @@
                     activeBlock = block;
                     el.classList.add('current-block');
                     
-                    // Calculate Progress
                     const totalDur = endTime - startTime;
                     const elapsed = nowTime - startTime;
                     const pct = Math.min(100, (elapsed / totalDur) * 100);
                     document.getElementById('progress-bar').style.width = `${pct}%`;
                     
-                    // Show button if academic and not done
                     const btn = el.querySelector('.complete-btn');
                     if (btn && !isDone) btn.classList.remove('hidden');
                     
-                    // Audio Alerts
                     const minsLeft = Math.floor((endTime - nowTime) / 60000);
                     document.getElementById('time-left').textContent = `${minsLeft}m left`;
                     
                     if (minsLeft === 5 && !fiveMinPlayed[block.id]) {
                         playTone('chime');
-                        speak(`5 minutes left for ${block.title}`);
                         fiveMinPlayed[block.id] = true;
                     }
                 } else {
-                    // Future block
                     el.classList.add('opacity-50'); 
                 }
 
-                // Visual check for completed
                 if (isDone) {
                     el.classList.add('task-card-complete');
-                    const check = el.querySelector('.check-icon');
-                    if(check) check.classList.remove('hidden');
+                    el.querySelector('.check-icon')?.classList.remove('hidden');
                     const btn = el.querySelector('.complete-btn');
                     if(btn) btn.classList.add('hidden');
                 }
             });
 
-            // Update Top Sticky
             const statusEl = document.getElementById('current-activity');
             const timerDiv = document.getElementById('timer-details');
             
@@ -458,12 +486,11 @@
                 statusEl.textContent = activeBlock.title;
                 timerDiv.classList.remove('hidden');
             } else {
-                statusEl.textContent = now.getHours() < 8 ? "Not Started" : "Free Time / Sleeping";
+                statusEl.textContent = now.getHours() < 8 ? "Not Started" : "Sleeping";
                 timerDiv.classList.add('hidden');
             }
         }
 
-        // --- Helpers ---
         function formatTime(arr) {
             return `${arr[0]}:${arr[1].toString().padStart(2, '0')}`;
         }
@@ -473,14 +500,27 @@
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.closest('.block-card').id;
                     taskCompletion[id] = true;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion}));
-                    
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion, wentToSchool}));
                     playTone('tick');
                     confetti({ particleCount: 50, spread: 40, origin: { y: 0.7 } });
                     updateState();
                 });
             });
         }
+
+        // Toggle School Logic
+        const schoolToggle = document.getElementById('school-toggle');
+        schoolToggle.checked = wentToSchool;
+        schoolToggle.addEventListener('change', (e) => {
+            wentToSchool = e.target.checked;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion, wentToSchool}));
+            if(wentToSchool) {
+                playTone('reward');
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+            renderSchedule(); // Re-render with correct gaming time
+            updateState();
+        });
 
         function playTone(type) {
             if(sounds[type]) {
@@ -498,33 +538,21 @@
             }
         }
 
-        // --- Initialization ---
         document.getElementById('start-schedule-btn').addEventListener('click', () => {
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('main-content').classList.remove('hidden');
-            
-            // Init logic
             renderSchedule();
             setInterval(updateState, 1000);
             updateState();
-            
-            // Enable audio context
             const AC = window.AudioContext || window.webkitAudioContext;
             if(AC) new AC().resume();
         });
 
-        // Mobile Rules Button
-        document.getElementById('rules-btn').addEventListener('click', () => {
-            document.getElementById('rules-sidebar').scrollIntoView({behavior: 'smooth'});
-        });
-
-        // Day Selector
         document.getElementById('day-selector').addEventListener('change', () => {
             renderSchedule();
             updateState();
         });
 
-        // Reset
         document.getElementById('reset-day-btn').addEventListener('click', () => {
             if(confirm("Reset ticks?")) {
                 localStorage.removeItem(STORAGE_KEY);
@@ -533,5 +561,19 @@
         });
 
     </script>
+    
+    <!-- Toggle CSS -->
+    <style>
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+        .toggle-bg { background-color: #e2e8f0; }
+        input:checked ~ .toggle-bg { background-color: #48bb78; }
+        input:checked ~ .dot { transform: translateX(100%); }
+    </style>
 </body>
 </html>
