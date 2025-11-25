@@ -7,8 +7,8 @@
     <!-- Tailwind & Confetti -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Load Lucide Icons (Visuals) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Load Lucide Icons (Fixed UMD Source) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         html { scroll-behavior: smooth; }
@@ -57,7 +57,12 @@
                 <h1 class="text-3xl font-bold text-gray-800" id="page-header">Daily Plan</h1>
                 <p id="current-date-display" class="text-gray-500 font-medium"></p>
             </div>
-            <div class="mt-4 md:mt-0">
+            <div class="flex gap-4 mt-4 md:mt-0 items-center">
+                <!-- Rules Button (Visible only on mobile/tablet where sidebar drops down) -->
+                <button id="rules-btn" class="lg:hidden bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-200 transition-colors flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i> Rules
+                </button>
+                
                 <div class="text-right">
                     <div class="text-xs text-gray-400 uppercase font-bold">Current Time</div>
                     <div id="current-time" class="text-3xl font-bold tabular-nums text-blue-600">--:--</div>
@@ -98,8 +103,9 @@
             </div>
 
             <!-- RIGHT COLUMN: Rules & Info Sidebar -->
-            <div class="lg:col-span-1">
-                <aside class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-6">
+            <div class="lg:col-span-1 order-last lg:order-none">
+                <!-- 'self-start' ensures sticky works correctly in a flex/grid parent -->
+                <aside id="rules-sidebar" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-6 self-start">
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <i data-lucide="shield-check" class="w-6 h-6 text-blue-600"></i> 
                         Expectations
@@ -368,7 +374,7 @@
                 container.appendChild(div);
             });
             
-            // Safe icon rendering
+            // Re-init icons safely
             if(typeof lucide !== 'undefined') lucide.createIcons();
             bindTaskButtons();
         }
@@ -431,7 +437,8 @@
                 // Visual check for completed
                 if (isDone) {
                     el.classList.add('task-card-complete');
-                    el.querySelector('.check-icon')?.classList.remove('hidden');
+                    const check = el.querySelector('.check-icon');
+                    if(check) check.classList.remove('hidden');
                     const btn = el.querySelector('.complete-btn');
                     if(btn) btn.classList.add('hidden');
                 }
@@ -504,6 +511,11 @@
             // Enable audio context
             const AC = window.AudioContext || window.webkitAudioContext;
             if(AC) new AC().resume();
+        });
+
+        // Mobile Rules Button
+        document.getElementById('rules-btn').addEventListener('click', () => {
+            document.getElementById('rules-sidebar').scrollIntoView({behavior: 'smooth'});
         });
 
         // Day Selector
