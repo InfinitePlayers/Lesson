@@ -15,15 +15,18 @@
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
         
         /* Visual Cards */
-        .block-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .block-card { 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            scroll-margin-top: 240px; 
+        }
+
         .current-block {
             border-width: 4px; border-color: #3b82f6; transform: scale(1.02);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); z-index: 10; position: relative;
         }
         
         /* States */
-        .completed-block { background-color: #f3f4f6; opacity: 0.7; border-left: 4px solid #10b981; filter: grayscale(0.5); }
-        .completed-block .complete-btn { display: none; } 
+        .completed-block { background-color: #f3f4f6; opacity: 0.6; border-left: 4px solid #9ca3af; filter: grayscale(0.8); }
         
         .travel-block { border-left: 4px solid #8b5cf6; background-color: #f5f3ff; }
         .evening-block { border-left: 4px solid #f59e0b; background-color: #fffbeb; }
@@ -103,7 +106,7 @@
                     <!-- Timer -->
                     <div id="timer-details" class="hidden">
                         <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-1">
-                            <span>Progress</span>
+                            <span>Time Left</span>
                             <span id="time-left">00:00</span>
                         </div>
                         <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
@@ -135,12 +138,12 @@
                             </h3>
                             <div class="text-sm text-green-800 space-y-2">
                                 <div class="flex justify-between bg-white/60 p-2 rounded">
-                                    <span>School Bonus:</span>
-                                    <span class="font-bold">16:30 Start</span>
+                                    <span>Went to School:</span>
+                                    <span class="font-bold">16:30 - 17:30</span>
                                 </div>
                                 <div class="flex justify-between bg-white/60 p-2 rounded">
-                                    <span>Standard:</span>
-                                    <span class="font-bold">17:00 Start</span>
+                                    <span>Did Not Go:</span>
+                                    <span class="font-bold">17:00 - 18:30</span>
                                 </div>
                                 <p class="text-xs text-center mt-2 opacity-75">Ends at 18:30 sharp.</p>
                             </div>
@@ -209,8 +212,6 @@
                     <option value="4">Thursday</option>
                     <option value="5">Friday</option>
                 </select>
-                <div class="h-4 w-px bg-gray-300"></div>
-                <button id="reset-day-btn" class="text-xs text-red-400 hover:text-red-600">Reset</button>
             </div>
         </footer>
     </div>
@@ -219,13 +220,13 @@
     <script>
         // --- Configuration & State ---
         const TODAY_KEY = new Date().toLocaleDateString('en-GB'); 
-        const STORAGE_KEY = `dexter_week_v3_${TODAY_KEY}`;
+        const STORAGE_KEY = `dexter_week_v5_${TODAY_KEY}`;
         
         let savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-        let taskCompletion = savedState.taskCompletion || {};
         let wentToSchool = savedState.wentToSchool !== undefined ? savedState.wentToSchool : true; // Default true
         
         let activeSchedule = [];
+        let toneLoaded = false;
         let currentBlockId = null;
         let fiveMinPlayed = {};
         let deviceFreeWarningPlayed = false;
@@ -349,17 +350,27 @@
             let day = selector.value;
             if (day === 'auto') day = new Date().getDay();
             
-            if (!weekData[day]) return []; // Handle weekends manually if needed
+            if (!weekData[day]) return []; 
             
-            // Merge Day Schedule with Evening Routine
             const daySchedule = [...weekData[day]];
             const evening = getEveningRoutine(wentToSchool);
             
-            // Combine and inject IDs
             return [...daySchedule, ...evening].map((block, index) => ({
                 ...block,
                 id: `d${day}-b${index}`
             }));
+        }
+
+        function getSafeKickoff(block) {
+            if (block.kickoff) return block.kickoff;
+            // Smart readout fallback
+            let text = `Time for ${block.title}.`;
+            if (block.html) {
+                // Very basic HTML strip for reading
+                const plain = block.html.replace(/<[^>]*>/g, ' ');
+                text += ' ' + plain.slice(0, 80); // Read first bit of description
+            }
+            return text;
         }
 
         function renderSchedule() {
@@ -376,36 +387,32 @@
                 const div = document.createElement('div');
                 div.id = block.id;
                 div.className = `block-card bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden ${block.type}-block`;
-                if (block.type === 'academic') div.dataset.taskId = block.id;
 
                 let html = `
                     <div class="flex justify-between items-start mb-2 relative z-10">
                         <div class="flex items-center gap-3">
                             <div class="text-2xl">${block.icon || '📅'}</div>
                             <div>
-                                <h3 class="font-bold text-lg text-gray-800">${block.title}</h3>
+                                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                                    ${block.title}
+                                    <button class="tts-play-btn text-gray-400 hover:text-blue-600 transition-colors" data-block-id="${block.id}" title="Read Instructions">
+                                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                                    </button>
+                                </h3>
                                 <span class="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${formatTime(block.start)} - ${formatTime(block.end)}</span>
                             </div>
                         </div>
-                        ${block.type === 'academic' ? `<div class="check-icon text-green-500 hidden"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>` : ''}
                     </div>
                 `;
                 
                 if (block.html) html += `<div class="text-gray-600 text-sm mt-2 pl-10">${block.html}</div>`;
                 
-                if (block.type === 'academic') {
-                    html += `
-                    <button class="complete-btn mt-4 w-full py-2 bg-white border-2 border-green-100 text-green-600 font-bold rounded-lg hover:bg-green-50 hover:border-green-300 transition-all flex justify-center items-center gap-2 hidden">
-                        <span>Mark Complete</span>
-                    </button>`;
-                }
-
                 div.innerHTML = html;
                 container.appendChild(div);
             });
             
             if(typeof lucide !== 'undefined') lucide.createIcons();
-            bindTaskButtons();
+            setupTTSListeners();
         }
 
         function updateState() {
@@ -414,11 +421,10 @@
             const h = now.getHours();
             const m = now.getMinutes();
             
-            // Date Header
             document.getElementById('current-date-display').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
             document.getElementById('current-time').textContent = now.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
 
-            // 18:25 Warning Logic (Device Free)
+            // Warning Alerts
             if (h === 18 && m === 25 && !deviceFreeWarningPlayed) {
                 playTone('chime');
                 speak("Five minutes until device free time. Please wind down.");
@@ -433,15 +439,13 @@
                 const el = document.getElementById(block.id);
                 if (!el) return;
 
-                const isDone = taskCompletion[block.id];
                 const hasStarted = nowTime >= startTime;
                 const hasEnded = nowTime >= endTime;
 
-                el.classList.remove('current-block', 'completed-block', 'task-card-missed', 'opacity-50');
+                el.classList.remove('current-block', 'completed-block', 'opacity-50');
                 
                 if (hasEnded) {
                     el.classList.add('completed-block');
-                    if (block.type === 'academic' && !isDone) el.classList.add('task-card-missed');
                 } else if (hasStarted) {
                     activeBlock = block;
                     el.classList.add('current-block');
@@ -451,25 +455,16 @@
                     const pct = Math.min(100, (elapsed / totalDur) * 100);
                     document.getElementById('progress-bar').style.width = `${pct}%`;
                     
-                    const btn = el.querySelector('.complete-btn');
-                    if (btn && !isDone) btn.classList.remove('hidden');
-                    
                     const minsLeft = Math.floor((endTime - nowTime) / 60000);
                     document.getElementById('time-left').textContent = `${minsLeft}m left`;
                     
                     if (minsLeft === 5 && !fiveMinPlayed[block.id]) {
                         playTone('chime');
+                        speak(`Five minutes left for ${block.title}`);
                         fiveMinPlayed[block.id] = true;
                     }
                 } else {
                     el.classList.add('opacity-50'); 
-                }
-
-                if (isDone) {
-                    el.classList.add('task-card-complete');
-                    el.querySelector('.check-icon')?.classList.remove('hidden');
-                    const btn = el.querySelector('.complete-btn');
-                    if(btn) btn.classList.add('hidden');
                 }
             });
 
@@ -479,7 +474,10 @@
             if (activeBlock) {
                 if (currentBlockId !== activeBlock.id) {
                     playTone('chime');
-                    if(activeBlock.kickoff) setTimeout(() => speak(activeBlock.kickoff), 1000);
+                    // Ensure activeBlock has an ID for the fallback lookup
+                    const readout = getSafeKickoff(activeBlock);
+                    setTimeout(() => speak(readout), 1000);
+                    
                     currentBlockId = activeBlock.id;
                     document.getElementById(activeBlock.id).scrollIntoView({behavior: 'smooth', block: 'center'});
                 }
@@ -495,32 +493,33 @@
             return `${arr[0]}:${arr[1].toString().padStart(2, '0')}`;
         }
 
-        function bindTaskButtons() {
-            document.querySelectorAll('.complete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.closest('.block-card').id;
-                    taskCompletion[id] = true;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion, wentToSchool}));
-                    playTone('tick');
-                    confetti({ particleCount: 50, spread: 40, origin: { y: 0.7 } });
-                    updateState();
-                });
-            });
-        }
-
         // Toggle School Logic
         const schoolToggle = document.getElementById('school-toggle');
         schoolToggle.checked = wentToSchool;
         schoolToggle.addEventListener('change', (e) => {
             wentToSchool = e.target.checked;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({taskCompletion, wentToSchool}));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({wentToSchool}));
             if(wentToSchool) {
                 playTone('reward');
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
-            renderSchedule(); // Re-render with correct gaming time
+            renderSchedule(); 
             updateState();
         });
+
+        function setupTTSListeners() {
+            document.querySelectorAll('.tts-play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const blockId = e.currentTarget.dataset.blockId;
+                    const block = activeSchedule.find(b => b.id === blockId);
+                    if(block) {
+                        const text = getSafeKickoff(block);
+                        speak(text);
+                    }
+                });
+            });
+        }
 
         function playTone(type) {
             if(sounds[type]) {
@@ -531,10 +530,11 @@
 
         function speak(text) {
             if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(text);
-                const v = speechSynthesis.getVoices().find(v => v.name.includes('Google UK English Female'));
+                const v = window.speechSynthesis.getVoices().find(v => v.name.includes('Google UK English Female'));
                 if (v) u.voice = v;
-                speechSynthesis.speak(u);
+                window.speechSynthesis.speak(u);
             }
         }
 
@@ -553,16 +553,8 @@
             updateState();
         });
 
-        document.getElementById('reset-day-btn').addEventListener('click', () => {
-            if(confirm("Reset ticks?")) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
-            }
-        });
-
+        // Toggle CSS
     </script>
-    
-    <!-- Toggle CSS -->
     <style>
         .toggle-checkbox:checked {
             right: 0;
