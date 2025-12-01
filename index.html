@@ -17,6 +17,7 @@
         /* Visual Cards */
         .block-card { 
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            /* Scroll margin ensures the header doesn't cover the card when auto-scrolling */
             scroll-margin-top: 240px; 
         }
 
@@ -103,15 +104,13 @@
                             <div id="current-activity" class="text-2xl font-bold text-blue-300 mt-1">Loading...</div>
                         </div>
                     </div>
-                    <!-- Timer -->
+                    <!-- Timer (Simplified) -->
                     <div id="timer-details" class="hidden">
                         <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-1">
                             <span>Time Left</span>
                             <span id="time-left">00:00</span>
                         </div>
-                        <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                            <div id="progress-bar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
-                        </div>
+                        <!-- Removed the progress bar as it's less relevant without specific tick tasks -->
                     </div>
                 </div>
 
@@ -220,7 +219,7 @@
     <script>
         // --- Configuration & State ---
         const TODAY_KEY = new Date().toLocaleDateString('en-GB'); 
-        const STORAGE_KEY = `dexter_week_v5_${TODAY_KEY}`;
+        const STORAGE_KEY = `dexter_week_v7_${TODAY_KEY}`;
         
         let savedState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         let wentToSchool = savedState.wentToSchool !== undefined ? savedState.wentToSchool : true; // Default true
@@ -280,20 +279,22 @@
 
         const weekData = {
             1: [ // Monday
-                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
-                { start: [9,0], end: [9,50], title: 'Chemistry (School)', type: 'academic', icon: '🧪', html: 'Miss C Davidson (Lab 3)' },
-                { start: [9,50], end: [10,0], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School done. Time to head home." },
-                { start: [10,0], end: [10,45], title: 'Drama (Home)', type: 'academic', icon: '🎭', html: COMMON_DESC.general },
-                { start: [10,45], end: [11,15], title: 'Morning Break', type: 'break', icon: '☕' },
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Room H104' },
+                { start: [9,0], end: [9,50], title: 'Chemistry (School)', type: 'academic', icon: '🧪', html: 'Lab 3' },
+                // CHANGED FOR 01/12/25
+                { start: [9,55], end: [10,45], title: 'Drama (School)', type: 'academic', icon: '🎭', html: 'Drama Studio' },
+                { start: [10,45], end: [11,0], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School collection. Head home." },
+                { start: [11,0], end: [11,15], title: 'Break / Arrive', type: 'break', icon: '☕', html: 'Quick snack before Maths.' },
+                // BACK TO NORMAL
                 { start: [11,15], end: [12,05], title: 'Maths (Home)', type: 'academic', icon: '📐', html: COMMON_DESC.maths },
                 { start: [12,10], end: [13,0], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻', html: COMMON_DESC.general },
                 { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
                 { start: [14,0], end: [14,15], title: 'Tutor PM', type: 'info', icon: '📝' }
             ],
             2: [ // Tuesday
-                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Miss M Bourke' },
-                { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
-                { start: [9,55], end: [10,45], title: 'Art (School)', type: 'academic', icon: '🎨', html: 'Mrs K Wilson (Art Room)' },
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Music Room' },
+                { start: [9,0], end: [9,50], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Room H102' },
+                { start: [9,55], end: [10,45], title: 'Art (School)', type: 'academic', icon: '🎨', html: 'Art Room' },
                 { start: [10,45], end: [10,55], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "Period 2 done. Head home." },
                 { start: [10,55], end: [11,15], title: 'Morning Break', type: 'break', icon: '☕' },
                 { start: [11,15], end: [12,05], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: COMMON_DESC.core },
@@ -305,10 +306,10 @@
             ],
             3: [ // Wednesday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
-                { start: [9,0], end: [9,50], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
+                { start: [9,0], end: [9,50], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Room BG01' },
                 { start: [9,55], end: [10,45], title: 'Core Skills (School)', type: 'academic', icon: '📚', html: 'Replaces Spanish.' },
                 { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
-                { start: [11,15], end: [12,05], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Miss E Jenkinson (H102)' },
+                { start: [11,15], end: [12,05], title: 'Maths (School)', type: 'academic', icon: '📐', html: 'Room H102' },
                 { start: [12,05], end: [12,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "Period 3 done. Head home." },
                 { start: [12,15], end: [13,0], title: 'Science (Home)', type: 'academic', icon: '🔬', html: COMMON_DESC.general },
                 { start: [13,0], end: [14,0], title: 'Lunch', type: 'break', icon: '🥪' },
@@ -317,10 +318,10 @@
                 { start: [15,10], end: [16,0], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing French)` }
             ],
             4: [ // Thursday
-                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Mr J Kubik (H104)' },
+                { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫', html: 'Room H104' },
                 { start: [9,0], end: [9,30], title: 'Maths (P1)', type: 'academic', icon: '📐', html: '<p>Short session before leaving.</p>' },
                 { start: [9,30], end: [9,45], title: 'Travel to School', type: 'travel', icon: '🚗' },
-                { start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Mr H Hussain (BG01)' },
+                { start: [9,55], end: [10,45], title: 'Integrated Learning (School)', type: 'academic', icon: '💻', html: 'Room BG01' },
                 { start: [10,45], end: [11,15], title: 'Travel Home / Break', type: 'travel', icon: '🚗' },
                 { start: [11,15], end: [12,05], title: 'Integrated Learning (Home)', type: 'academic', icon: '💻' },
                 { start: [12,10], end: [13,0], title: 'DT (Home Challenge)', type: 'academic', icon: '🔨', html: 'Dyson Foundation Cards.' },
@@ -331,11 +332,11 @@
             ],
             5: [ // Friday
                 { start: [8,30], end: [9,0], title: 'Tutor (School)', type: 'info', icon: '🏫' },
-                { start: [9,0], end: [9,50], title: 'Global Citizenship (School)', type: 'academic', icon: '🌍', html: 'Mrs K Wilson (B201)' },
-                { start: [9,55], end: [10,45], title: 'Physics (School)', type: 'academic', icon: '⚛️', html: 'Miss E McGrath (Lab 3)' },
+                { start: [9,0], end: [9,50], title: 'Global Citizenship (School)', type: 'academic', icon: '🌍', html: 'Room B201' },
+                { start: [9,55], end: [10,45], title: 'Physics (School)', type: 'academic', icon: '⚛️', html: 'Lab 3' },
                 { start: [10,45], end: [11,15], title: 'Break (School)', type: 'break', icon: '🍎' },
-                { start: [11,15], end: [12,05], title: 'Computer Science (School)', type: 'academic', icon: '💻', html: 'Mr I Gibb (Comp Lab)' },
-                { start: [12,10], end: [13,0], title: 'Geography (School)', type: 'academic', icon: '🌍', html: 'Mr J Harte (B102)' },
+                { start: [11,15], end: [12,05], title: 'Computer Science (School)', type: 'academic', icon: '💻', html: 'Comp Lab' },
+                { start: [12,10], end: [13,0], title: 'Geography (School)', type: 'academic', icon: '🌍', html: 'Room B102' },
                 { start: [13,0], end: [14,0], title: 'Lunch (School)', type: 'break', icon: '🥪' },
                 { start: [14,0], end: [14,15], title: 'Travel Home', type: 'travel', icon: '🚗', kickoff: "School week done! Head home." },
                 { start: [14,15], end: [15,05], title: 'Core Skills (Home)', type: 'academic', icon: '📚', html: `${COMMON_DESC.core} (Replacing Spanish)` },
@@ -363,12 +364,10 @@
 
         function getSafeKickoff(block) {
             if (block.kickoff) return block.kickoff;
-            // Smart readout fallback
             let text = `Time for ${block.title}.`;
             if (block.html) {
-                // Very basic HTML strip for reading
                 const plain = block.html.replace(/<[^>]*>/g, ' ');
-                text += ' ' + plain.slice(0, 80); // Read first bit of description
+                text += ' ' + plain.slice(0, 80);
             }
             return text;
         }
@@ -450,11 +449,6 @@
                     activeBlock = block;
                     el.classList.add('current-block');
                     
-                    const totalDur = endTime - startTime;
-                    const elapsed = nowTime - startTime;
-                    const pct = Math.min(100, (elapsed / totalDur) * 100);
-                    document.getElementById('progress-bar').style.width = `${pct}%`;
-                    
                     const minsLeft = Math.floor((endTime - nowTime) / 60000);
                     document.getElementById('time-left').textContent = `${minsLeft}m left`;
                     
@@ -474,7 +468,6 @@
             if (activeBlock) {
                 if (currentBlockId !== activeBlock.id) {
                     playTone('chime');
-                    // Ensure activeBlock has an ID for the fallback lookup
                     const readout = getSafeKickoff(activeBlock);
                     setTimeout(() => speak(readout), 1000);
                     
